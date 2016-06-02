@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.15.1",
     "express": "^4.13.4",
     "pg": "^4.5.5"
   },

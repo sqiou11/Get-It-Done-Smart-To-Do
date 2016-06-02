@@ -8,7 +8,7 @@
  * @param {function(string)} callback - called when the URL of the current tab
  *   is found.
  */
-function getCurrentTabUrl(callback) {
+function getCurrentTabBaseUrl(callback) {
     // Query filter to be passed to chrome.tabs.query - see
     // https://developer.chrome.com/extensions/tabs#method-query
     var queryInfo = {
@@ -33,8 +33,12 @@ function getCurrentTabUrl(callback) {
         // from |queryInfo|), then the "tabs" permission is required to see their
         // "url" properties.
         console.assert(typeof url == 'string', 'tab.url should be a string');
+        var pathArray = url.split( '/' );
+        var protocol = pathArray[0];
+        var host = pathArray[2];
+        var base_url = protocol + '//' + host + '/';
 
-        callback(url);
+        callback(base_url);
     });
 
     // Most methods of the Chrome extension APIs are asynchronous. This means that
@@ -51,19 +55,16 @@ function loginFunction() {
     // Cancel the form submit
     event.preventDefault();
 
-    // The URL to POST our data to
-    var loginUrl = 'http://127.0.0.1:8081/chrome_ext_login?';
-
     var username = encodeURIComponent(document.getElementById('usernameField').value);
     var password = encodeURIComponent(document.getElementById('passwordField').value);
     var params = 'username=' + username + '&password=' + password;
 
     // Set up an asynchronous AJAX POST request
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', loginUrl + params, true);
+    xhr.open('POST', 'http://127.0.0.1:8081/chrome_ext_login', true);
 
     // Replace any instances of the URLEncoded space char with +
-    // params = params.replace(/%20/g, '+');
+    params = params.replace(/%20/g, '+');
 
     // Set correct header for form data 
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -73,43 +74,67 @@ function loginFunction() {
         // If the request completed
         if (xhr.readyState == 4) {
             if(xhr.responseText == 'login successful') {
-              window.localStorage.setItem('token', username);
-              // document.getElementById('status').innerHTML = xhr.responseText;
-              renderDisplay();
+                chrome.runtime.getBackgroundPage(function(bgPage) {
+                    bgPage.startSession(username);
+                    renderDisplay();
+                });
             }
+            // document.getElementById('status').innerHTML = xhr.responseText;
         }
     };
 
     // Send the request and set status
-    xhr.send();
+    xhr.send(params);
 }
 
 function logoutFunction() {
-    localStorage.removeItem('token');
-    renderDisplay();
+    chrome.runtime.getBackgroundPage(function(bgPage) {
+        bgPage.endSession();
+        renderDisplay();
+    });
+}
+
+function recordFunction() {
+    chrome.runtime.getBackgroundPage(function(bgPage) {
+        bgPage.toggleRecord();
+        renderDisplay();
+    });
 }
 
 function renderDisplay() {
-    if(window.localStorage.getItem('token') == undefined) {
-        document.getElementById('login').style.display = "block";
-        document.getElementById('body').innerHTML = '';
-        document.getElementById('status').innerHTML = '';
-        document.getElementById('logout').style.display = "none";
-    }
-    else {
-        document.getElementById('login').style.display = "none";
-        document.getElementById('body').innerHTML = "<h2>Hello " + window.localStorage.getItem('token') + "</h2>";
-        getCurrentTabUrl(function(url) {
-            var date = new Date();
-            document.getElementById('status').innerHTML = date.toLocaleString() + ": " + url;
-        })
-        document.getElementById('logout').style.display = "block";
-    }
+    chrome.runtime.getBackgroundPage(function(bgPage) {
+        if(bgPage.getSession() == undefined) {
+            document.getElementById('login').style.display = "block";
+            document.getElementById('body').innerHTML = '';
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('logged_in').style.display = "none";
+        }
+        else {
+            document.getElementById('login').style.display = "none";
+            document.getElementById('body').innerHTML = "<h2>Hello " + bgPage.getSession() + "</h2>";
+            getCurrentTabBaseUrl(function(url) {
+                var date = new Date();
+                document.getElementById('status').innerHTML = date.toLocaleString() + ": " + url;
+            });
+            document.getElementById('logged_in').style.display = "block";
+        }
+
+        if(bgPage.getRecordFlag()) {
+            document.getElementById('record').className = "btn btn-danger";
+            document.getElementById('record').innerHTML = "Recording"
+        }
+        else {
+            document.getElementById('record').className = "btn btn-primary"
+            document.getElementById('record').innerHTML = "Record"
+        }
+    })
 }
+
 
 // When the popup HTML has loaded
 window.addEventListener('load', function(evt) {
+    renderDisplay();
     document.getElementById('login').addEventListener('submit', loginFunction);
     document.getElementById('logout').addEventListener('click', logoutFunction);
-    renderDisplay();
+    document.getElementById('record').addEventListener('click', recordFunction);
 });
