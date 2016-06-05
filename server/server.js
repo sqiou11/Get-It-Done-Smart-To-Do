@@ -1,22 +1,25 @@
-/*var http = require("http");
-
-http.createServer(function (request, response) {
-	console.log('Handling request');
-	response.writeHead(200, {'Content-Type': 'text/plain'});
-	response.end('Hello World\n');
-}).listen(8081);
-
-console.log('Server running at http://127.0.0.1:8081/');*/
-
 var pgp = require('pg-promise')();
-var express = require('express');
+var express = require('express'),
+		app = express(),
+		session = require('express-session');
 var bodyParser = require('body-parser');
-var app = express();
+var nunjucks = require('nunjucks');
 
+app.use(session({
+	secret: 'super secret key whoo',
+	resave: true,
+	saveUninitialized: true,
+	cookie: { maxAge: 60000 }	// set the maxAge to 1 minute
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var db = pgp("postgres://postgres:@localhost:5432/appDB");
+
+nunjucks.configure('views', {
+    autoescape: true,
+    express: app
+});
 
 // all chrome extension functions
 app.post('/chrome_ext_login', function(req, res) {
@@ -78,31 +81,68 @@ app.post('/end_web_log', function(req, res) {
 		});
 });
 
-
-
-// all web application functions
-app.get('/', function(req, res) {
-	res.send('hello world');
+// handle requests to retrieve log data between a start and end time, url is optional
+app.get('/get_web_log', function(req, res) {
+	var params = {
+		user: req.query['username'],
+		url: req.query['url'],
+		start_time: req.query['start_time'],
+		end_time: req.query['end_time']
+	};
+	db.many('SELECT * FROM websites.' + params['user'] + ' WHERE start_time>=${start_time} AND start_time<${end_time}', params)
+		.then(function(data) {
+			console.log(data);
+			res.send(data);
+		})
+		.catch(function(error) {
+			console.log(error);
+			res.send('error');
+		})
 });
 
-app.get('/login', function(req, res) {
-	console.log(req.query);
-	console.log('login attempt with username = ' + req.query['username'] + ' password = ' + req.query['password']);
-	var query = client.query('SELECT * FROM "Users" WHERE username=$1 AND password=$2', [req.query['username'], req.query['password']]);
-
-	query.on('error', function(error) {
-		console.log(error);
-		res.send('login error');
-	});
-	query.on('row', function(row, result) {
-		result.addRow(row);
-	});
-	query.on('end', function(result) {
-		if(result.rows.length > 0)
+app.post('/desktop_login', function(req, res) {
+	var params = {
+		username: req.body['username'],
+		password: req.body['password']
+	};
+	db.one('SELECT * FROM "Users" WHERE username=${username} AND password=${password}', params)
+		.then(function(data) {
+			req.session.user = params.username;
 			res.send('login successful');
-		else
+		})
+		.catch(function(error) {
 			res.send('login failure');
-	});
+		});
+});
+
+
+// Authentication and Authorization Middleware
+var auth = function(req, res, next) {
+	console.log(req.session);
+  if (req.session.user)
+    return next();
+  else
+    return res.render(401);
+};
+
+// all web application functions
+app.get('/', auth, function(req, res) {
+	res.render('index.html');
+});
+
+app.post('/login', function(req, res) {
+	var params = {
+		username: req.body['username'],
+		password: req.body['password']
+	};
+	db.one('SELECT * FROM "Users" WHERE username=${username} AND password=${password}', params)
+		.then(function(data) {
+			req.session.user = params.username;
+			res.send('login successful');
+		})
+		.catch(function(error) {
+			res.send('login failure');
+		});
 });
 
 app.post('/register', function(req, res) {

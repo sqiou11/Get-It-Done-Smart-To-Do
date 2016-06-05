@@ -1,0 +1,82 @@
+{
+  "name": "electron-prebuilt",
+  "version": "1.2.1",
+  "description": "Install electron prebuilt binaries for the command-line use using npm",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electron-userland/electron-prebuilt.git"
+  },
+  "scripts": {
+    "cache-clean": "rm -rf ~/.electron && rm -rf dist",
+    "postinstall": "node install.js",
+    "pretest": "npm run cache-clean && node install.js",
+    "test": "standard && tape test/*.js"
+  },
+  "bin": {
+    "electron": "cli.js"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "extract-zip": "^1.0.3",
+    "electron-download": "^2.0.0"
+  },
+  "devDependencies": {
+    "home-path": "^0.1.1",
+    "path-exists": "^1.0.0",
+    "standard": "^5.4.1",
+    "tape": "^3.0.1"
+  },
+  "author": {
+    "name": "Mathias Buus"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/electron-userland/electron-prebuilt/issues"
+  },
+  "homepage": "https://github.com/electron-userland/electron-prebuilt",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [],
+  "gitHead": "ea3549f06eb8d0282f43714e374564816153a44c",
+  "_id": "electron-prebuilt@1.2.1",
+  "_shasum": "23861b3f1c4c54033a76eb02e54e6a175df00584",
+  "_from": "electron-prebuilt@latest",
+  "_npmVersion": "2.10.1",
+  "_nodeVersion": "0.12.4",
+  "_npmUser": {
+    "name": "kevinsawicki",
+    "email": "kevinsawicki@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "kevinsawicki",
+      "email": "kevinsawicki@gmail.com"
+    },
+    {
+      "name": "mafintosh",
+      "email": "mathiasbuus@gmail.com"
+    },
+    {
+      "name": "mattdesl",
+      "email": "dave.des@gmail.com"
+    },
+    {
+      "name": "maxogden",
+      "email": "max@maxogden.com"
+    },
+    {
+      "name": "zcbenz",
+      "email": "zcbenz@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "23861b3f1c4c54033a76eb02e54e6a175df00584",
+    "tarball": "https://registry.npmjs.org/electron-prebuilt/-/electron-prebuilt-1.2.1.tgz"
+  },
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/electron-prebuilt-1.2.1.tgz_1464800021530_0.4946055405307561"
+  },
+  "_resolved": "https://registry.npmjs.org/electron-prebuilt/-/electron-prebuilt-1.2.1.tgz"
+}
