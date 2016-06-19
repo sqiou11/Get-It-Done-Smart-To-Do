@@ -72,7 +72,7 @@ app.post('/end_web_log', function(req, res) {
 		url: req.body['url'],
 		end_time: req.body['end_time']
 	};
-	db.none('UPDATE ' + table + ' SET end_time=${end_time}, active=FALSE WHERE url=${url}', params)
+	db.none('UPDATE ' + table + ' SET end_time=${end_time}, active=FALSE WHERE url=${url} AND active=TRUE', params)
 		.then(function() {
 			res.send('success');
 		})
@@ -112,6 +112,86 @@ app.post('/desktop_login', function(req, res) {
 		})
 		.catch(function(error) {
 			res.send('login failure');
+		});
+});
+
+app.get('/get_tasks', function(req, res) {
+	db.any('SELECT * FROM tasks.' + req.query['username'])
+		.then(function(data) {
+			if(data === undefined) data = {};
+			res.send(data);
+		})
+		.catch(function(error) {
+			console.log(error);
+			res.send('error');
+		});
+});
+
+app.get('/get_categories', function(req, res) {
+	var table = 'categories.' + req.query['username'];
+	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
+		req.query['username'] + '_pkey PRIMARY KEY (id))')
+		.then(function() {
+			db.any('SELECT * FROM categories.' + req.query['username'])
+				.then(function(data) {
+					res.send(data);
+				})
+				.catch(function(error) {
+					console.log(error);
+					res.send('error');
+				});
+		})
+		.catch(function(error) {
+			console.log(error);
+		});
+});
+
+app.post('/new_task', function(req, res) {
+	var table = 'tasks.' + req.body['username'];
+	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, CONSTRAINT ' +
+		req.body['username'] + '_pkey PRIMARY KEY (id))')
+		.then(function() {
+			var params = req.body['data'];
+			db.none('INSERT INTO ' + table + '(id, description, category, due, reminder) VALUES (${id}, ${desc}, ${category}, ${due}, ${reminder})', params)
+				.then(function() {
+					res.send('success');
+				})
+				.catch(function(error) {
+					console.log(error);
+					res.send('error');
+				});
+		})
+		.catch(function(error) {
+			console.log(error);
+		});
+});
+
+app.post('/update_categories', function(req, res) {
+	console.log(req.body['username']);
+	var table = 'categories.' + req.body['username'];
+	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
+		req.body['username'] + '_pkey PRIMARY KEY (id))')
+		.then(function() {
+			for(var i = 0; i < req.body['data'].length; i++) {
+				var params = req.body['data'][i];
+				db.none('INSERT INTO ' + table + '(id,name,monitor) VALUES (${id},${name},${monitor}) ' +
+				'ON CONFLICT (id) ' +
+				'DO UPDATE SET name=${name},monitor=${monitor}', params)
+					.then(function() {
+						res.send('success');
+					})
+					.catch(function(error) {
+						console.log('could not update categories table');
+						console.log(error);
+					});
+				}
+		})
+		.catch(function(error) {
+			console.log('could not create categories table');
+			console.log(error);
 		});
 });
 
