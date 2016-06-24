@@ -3,28 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <title>Get It Done</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <!-- Bootstrap Core CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+
   <link rel="stylesheet" href="includes/css/bootstrap-datetimepicker.min.css">
+
+  <!-- MetisMenu CSS -->
+  <link href="includes/css/metisMenu.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link href="includes/css/sb-admin-2.css" rel="stylesheet">
+
+  <!-- Custom Fonts -->
+  <link href="includes/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body>
-  <div class="container-fluid">
-    <div ng-view></div>
-  </div>
+  <div ui-view></div>
 
   <!-- Insert this line above script imports  -->
   <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <script src="includes/js/metisMenu.min.js"></script>
+
   <script src="http://code.angularjs.org/1.4.9/angular.js"></script>
   <script src="http://code.angularjs.org/1.4.9/angular-route.js"></script>
   <script src="http://code.angularjs.org/1.4.9/angular-cookies.js"></script>
   <script src="http://code.highcharts.com/highcharts.js"></script>
   <script src="http://code.highcharts.com/highcharts-more.js"></script>
   <script src="http://code.highcharts.com/modules/exporting.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
 
   <script src="includes/js/moment-with-locales.min.js"></script>
   <script src="includes/js/bootstrap-datetimepicker.min.js"></script>
+  <script src="includes/js/angular-ui-router.js"></script>
+
   <script src="scripts/app.js"></script>
   <script src="modules/authentication/services.js"></script>
   <script src="modules/authentication/controllers.js"></script>

@@ -1,0 +1,137 @@
+<div class="container">
+  <div ng-repeat="(key, list) in taskCtrl.sortedTasks">
+    <h3>{{key | uppercase}}</h3>
+    <ul class="list-group">
+      <li ng-repeat="task in list" class="list-group-item row" ng-mouseenter="taskCtrl.mousedOverTask[task.id]=true" ng-mouseleave="taskCtrl.mousedOverTask[task.id]=false">
+        <div class="col-xs-1">
+          <a href>
+            <span class="glyphicon glyphicon-unchecked" ng-show="!task.done" ng-click="task.done=true"></span>
+            <span class="glyphicon glyphicon-check" ng-show="task.done" ng-click="task.done=false"></span>
+          </a>
+        </div>
+        <div class="col-xs-4">{{task.description}}</div>
+        <div class="col-xs-4">{{task.due | date:'MM/dd hh:mma'}}</div>
+        <div class="col-xs-2">{{task.category}}</div>
+        <div class="col-xs-1">
+          <div class="btn-group" ng-show="taskCtrl.mousedOverTask[task.id]">
+            <a href class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="glyphicon glyphicon-option-horizontal"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li><a href>Edit</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href ng-click="taskCtrl.deleteTask(task.id)">Delete</a></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      <!-- form to add a new task -->
+      <li class="list-group-item row">
+        <div class="col-xs-12">
+          <a href ng-click="taskCtrl.setCreateTask(key, true)" ng-show="!taskCtrl.isCreatingTask(key)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Task
+          </a>
+        </div>
+        <form ng-show="taskCtrl.isCreatingTask(key)">
+          <div class="row">
+            <div class="col-xs-5">
+              <input type="text" name="description" id="description" class="form-control" ng-model="taskCtrl.newTask.desc" placeholder="Description" required />
+            </div>
+            <div class="col-xs-2">
+              <select class="form-control" name="category" id="category" ng-model="taskCtrl.newTask.category" required>
+                <option disabled selected value="">Select a category...</option>
+                <option ng-repeat="category in taskCtrl.categories">{{category.name}}</option>
+              </select>
+            </div>
+            <div class="col-xs-3">
+              <div class="form-group">
+                <div class="input-group date due-date" id="dueDatePicker-{{key}}">
+                  <input type="text" class="form-control" placeholder="Deadline" id="dueDatePicker-input"/>
+                  <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-xs-2">
+              <select class="form-control" name="reminder" id="reminder" ng-model="taskCtrl.newTask.reminder">
+                <option disabled selected value="">Select a reminder...</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" ng-click="taskCtrl.setCreateTask(key, false); taskCtrl.addTask()">Add</button>
+          <a href ng-click="taskCtrl.setCreateTask(key, false)">Cancel</a>
+        </form>
+      </li>
+    </ul>
+  </div>
+
+  <!-- div to manage categories -->
+  <div ng-controller="CategoryController as categoryCtrl">
+    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal" ng-click="categoryCtrl.getCategories()">
+      Categories
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Your Categories</h4>
+          </div>
+          <div class="modal-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Monitor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="category in categoryCtrl.categories">
+                  <td ng-show="!category.edit">
+                    {{category.name}}
+                  </td>
+                  <td ng-if="category.edit"><input type="text" ng-model="categoryCtrl.edit.name" ng-init="categoryCtrl.edit.name = category.name"></td>
+
+                  <td ng-show="!category.edit">
+                    <input type="checkbox" ng-checked="category.monitor" disabled="disabled">
+                  </td>
+                  <td ng-if="category.edit">
+                    <input type="checkbox" ng-init="categoryCtrl.edit.monitor = category.monitor" ng-model="categoryCtrl.edit.monitor">
+                  </td>
+
+                  <td ng-show="!category.edit">
+                    <a href><span class="glyphicon glyphicon-pencil" ng-click="category.edit=true"></span></a>
+                    <a href><span class="glyphicon glyphicon-trash" ng-click=""></span></a>
+                  </td>
+                  <td ng-if="category.edit">
+                    <button type="button" class="btn btn-success" ng-click="categoryCtrl.editCategory($index, categoryCtrl.edit)"><span class="glyphicon glyphicon-ok"></span></button>
+                    <button type="button" class="btn btn-danger" ng-click="category.edit = false"><span class="glyphicon glyphicon-remove"></span></button>
+                  </td>
+                </tr>
+                <tr id="newCategory" ng-show="categoryCtrl.isCreatingCat()">
+                  <td><input type="text" ng-model="categoryCtrl.newCategory.name" ng-change="categoryCtrl.createCatError=false"></td>
+                  <td><input type="checkbox" ng-model="categoryCtrl.newCategory.monitor"></td>
+                  <td>
+                    <button type="button" class="btn btn-success" ng-click="categoryCtrl.addCategory(categoryCtrl.newCategory)"><span class="glyphicon glyphicon-ok"></span></button>
+                    <button type="button" class="btn btn-danger" ng-click="categoryCtrl.setCreateCat(false)"><span class="glyphicon glyphicon-remove"></span></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="alert alert-danger" ng-show="categoryCtrl.createCatError">Category "{{categoryCtrl.newCategory.name}}" already exists</span></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" ng-click="categoryCtrl.setCreateCat(true)">Add</button>
+            <button type="button" class="btn btn-primary" ng-click="categoryCtrl.submitCatChanges()">Save</button>
+            <button type="button" class="btn btn-default" ng-click="categoryCtrl.setCreateCat(false)" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -66,4 +66,6 @@ angular.module('Home')
       }
     });
   };
+
+  this.getCategories();
 }])

@@ -1,146 +1,181 @@
-﻿<h1>Welcome {{user}} <small><a href="#/login">Logout</a></small></h1>
-
-<div ng-controller="PanelController as panel">
-  <ul class="nav nav-tabs">
-    <li ng-class="{ active:panel.isSelected(1) }">
-      <a href ng-click="panel.selectTab(1)">To-do</a>
-    </li>
-    <li ng-class="{ active:panel.isSelected(2) }">
-      <a href ng-click="panel.selectTab(2)">Activity</a>
-    </li>
-  </ul>
-
-  <div class="container" ng-show="panel.isSelected(1)" ng-controller="TaskController as taskCtrl">
-    <div ng-repeat="task in taskCtrl.tasks">
-      <a href><span class="glyphicon glyphicon-unchecked"></span></a> {{task.description}}
-      <div class="btn-group">
-        <a href class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <span class="glyphicon glyphicon-option-horizontal"></span>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-right">
-          <li><a href>Edit</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a href>Delete</a></li>
-        </ul>
+<div id="wrapper">
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Get It Done</a>
       </div>
+      <!-- /.navbar-header -->
+
+      <ul class="nav navbar-top-links navbar-right">
+        <!-- /.dropdown -->
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href>
+              <i class="fa fa-bell fa-fw"></i>  <i class="fa fa-caret-down"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-alerts">
+            <li>
+              <a href="#">
+                <div>
+                    <i class="fa fa-comment fa-fw"></i> New Comment
+                    <span class="pull-right text-muted small">4 minutes ago</span>
+                </div>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a href="#">
+                <div>
+                    <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                    <span class="pull-right text-muted small">12 minutes ago</span>
+                </div>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a href="#">
+                <div>
+                    <i class="fa fa-envelope fa-fw"></i> Message Sent
+                    <span class="pull-right text-muted small">4 minutes ago</span>
+                </div>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a href="#">
+                <div>
+                    <i class="fa fa-tasks fa-fw"></i> New Task
+                    <span class="pull-right text-muted small">4 minutes ago</span>
+                </div>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a href="#">
+                <div>
+                    <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                    <span class="pull-right text-muted small">4 minutes ago</span>
+                </div>
+              </a>
+            </li>
+            <li class="divider"></li>
+            <li>
+              <a class="text-center" href="#">
+                <strong>See All Alerts</strong>
+                <i class="fa fa-angle-right"></i>
+              </a>
+            </li>
+          </ul>
+          <!-- /.dropdown-alerts -->
+        </li>
+        <!-- /.dropdown -->
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href>
+            <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-user">
+            <li><a href><i class="fa fa-user fa-fw"></i> User Profile</a>
+            </li>
+            <li><a href><i class="fa fa-gear fa-fw"></i> Settings</a>
+            </li>
+            <li class="divider"></li>
+            <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+            </li>
+          </ul>
+          <!-- /.dropdown-user -->
+        </li>
+        <!-- /.dropdown -->
+      </ul>
+      <!-- /.navbar-top-links -->
+
+      <div class="navbar-default sidebar" role="navigation">
+        <div class="sidebar-nav navbar-collapse">
+          <ul class="nav" id="side-menu">
+            <li>
+              <a href ui-sref=".dash"><i class="fa fa-home fa-fw"></i> Home</a>
+            </li>
+            <li>
+              <a href ui-sref=".tasks"><i class="fa fa-list-ul fa-fw"></i> Tasks</a>
+            </li>
+            <li ng-controller="CategoryController as categoryCtrl">
+              <a href aria-expanded="false"><i class="fa fa-wrench fa-fw"></i> Categories<span class="fa arrow"></span></a>
+              <ul class="nav nav-second-level">
+                <li ng-repeat="category in categoryCtrl.categories">
+                  <a href>{{category.name}}</a>
+                </li>
+              </ul>
+              <!-- /.nav-second-level -->
+            </li>
+            <li>
+              <a href ui-sref=".activity"><i class="fa fa-line-chart fa-fw"></i> Activity</a>
+            </li>
+            <li>
+              <a href><i class="fa fa-area-chart fa-fw"></i> Productivity</a>
+            </li>
+          </ul>
+        </div>
+        <!-- /.sidebar-collapse -->
     </div>
-    <a href ng-click="taskCtrl.createTaskFlag=true; taskCtrl.getCategories(); taskCtrl.initForm()" ng-show="!taskCtrl.createTaskFlag">
-      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Task
-    </a>
+    <!-- /.navbar-static-side -->
+  </nav>
 
-    <!-- form to add a new task -->
-    <form ng-show="taskCtrl.createTaskFlag">
-      <div class="row">
-        <div class="col-xs-5">
-          <input type="text" name="description" id="description" class="form-control" ng-model="taskCtrl.newTask.desc" placeholder="Description" required />
-        </div>
-        <div class="col-xs-2">
-          <select class="form-control" name="category" id="category" ng-model="taskCtrl.newTask.category" required>
-            <option disabled selected value="">Select a category...</option>
-            <option ng-repeat="category in taskCtrl.categories">{{category.name}}</option>
-          </select>
-        </div>
-        <div class="col-xs-3">
-          <div class="form-group">
-            <div class="input-group date" id="dueDatePicker">
-              <input type="text" class="form-control" placeholder="Deadline" id="dueDatePicker-input"/>
-              <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
-            </div>
-          </div>
-        </div>
-        <div class="col-xs-2">
-          <select class="form-control" name="reminder" id="reminder" ng-model="taskCtrl.newTask.reminder">
-            <option disabled selected value="">Select a reminder...</option>
-            <option value="15">15 minutes</option>
-            <option value="30">30 minutes</option>
-          </select>
-        </div>
-      </div>
-      <button type="button" class="btn btn-primary" ng-click="taskCtrl.addTask()">Add</button>
-      <a href ng-click="taskCtrl.createTaskFlag=false">Cancel</a>
-    </form>
-
-    <!-- div to manage categories -->
-    <div ng-controller="CategoryController as categoryCtrl">
-      <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal" ng-click="categoryCtrl.getCategories()">
-        Categories
-      </button>
-
-      <!-- Modal -->
-      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="myModalLabel">Your Categories</h4>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Monitor</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr ng-repeat="category in categoryCtrl.categories">
-                    <td ng-show="!category.edit">
-                      {{category.name}}
-                    </td>
-                    <td ng-if="category.edit"><input type="text" ng-model="categoryCtrl.edit.name" ng-init="categoryCtrl.edit.name = category.name"></td>
-
-                    <td ng-show="!category.edit">
-                      <input type="checkbox" ng-checked="category.monitor" disabled="disabled">
-                    </td>
-                    <td ng-if="category.edit">
-                      <input type="checkbox" ng-init="categoryCtrl.edit.monitor = category.monitor" ng-model="categoryCtrl.edit.monitor">
-                    </td>
-
-                    <td ng-show="!category.edit">
-                      <a href><span class="glyphicon glyphicon-pencil" ng-click="category.edit=true"></span></a>
-                      <a href><span class="glyphicon glyphicon-trash" ng-click=""></span></a>
-                    </td>
-                    <td ng-if="category.edit">
-                      <button type="button" class="btn btn-success" ng-click="categoryCtrl.editCategory($index, categoryCtrl.edit)"><span class="glyphicon glyphicon-ok"></span></button>
-                      <button type="button" class="btn btn-danger" ng-click="category.edit = false"><span class="glyphicon glyphicon-remove"></span></button>
-                    </td>
-                  </tr>
-                  <tr id="newCategory" ng-show="categoryCtrl.isCreatingCat()">
-                    <td><input type="text" ng-model="categoryCtrl.newCategory.name" ng-change="categoryCtrl.createCatError=false"></td>
-                    <td><input type="checkbox" ng-model="categoryCtrl.newCategory.monitor"></td>
-                    <td>
-                      <button type="button" class="btn btn-success" ng-click="categoryCtrl.addCategory(categoryCtrl.newCategory)"><span class="glyphicon glyphicon-ok"></span></button>
-                      <button type="button" class="btn btn-danger" ng-click="categoryCtrl.setCreateCat(false)"><span class="glyphicon glyphicon-remove"></span></button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="alert alert-danger" ng-show="categoryCtrl.createCatError">Category "{{categoryCtrl.newCategory.name}}" already exists</span></div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-success" ng-click="categoryCtrl.setCreateCat(true)">Add</button>
-              <button type="button" class="btn btn-primary" ng-click="categoryCtrl.submitCatChanges()">Save</button>
-              <button type="button" class="btn btn-default" ng-click="categoryCtrl.setCreateCat(false)" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div ng-show="panel.isSelected(2)">
-    <div id="data" ng-controller="ActivityDisplayController as activity"></div>
+  <div id="page-wrapper">
     <div class="row">
-      <div class='col-sm-6 col-sm-offset-3'>
-        <div class="form-group">
-          <div class='input-group date' id='datePicker'>
-            <input type='text' class="form-control" />
-            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-            </span>
-          </div>
-        </div>
+      <div class="col-lg-12">
+        <h1 class="page-header">Welcome {{user}} <small><a href="#/login">Logout</a></small></h1>
       </div>
     </div>
-    <div id="container" style="width: 100%; height: 400px; margin: 0 auto"></div>
+
+    <div ui-view></div>
+
   </div>
+  <!-- /#page-wrapper -->
+</div>
+<!-- /#wrapper -->
+
+<!-- all the contents of sb-admin-2.js needs to be loaded here (and apparently doing a script reference is bad) -->
+<script>
+  $(function() {
+      console.log('initializing menu');
+      $('#side-menu').metisMenu();
+  });
+
+  //Loads the correct sidebar on window load,
+  //collapses the sidebar on window resize.
+  // Sets the min-height of #page-wrapper to window size
+  $(function() {
+      $(window).bind("load resize", function() {
+          topOffset = 50;
+          width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+          if (width < 768) {
+              $('div.navbar-collapse').addClass('collapse');
+              topOffset = 100; // 2-row-menu
+          } else {
+              $('div.navbar-collapse').removeClass('collapse');
+          }
+
+          height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+          height = height - topOffset;
+          if (height < 1) height = 1;
+          if (height > topOffset) {
+              $("#page-wrapper").css("min-height", (height) + "px");
+          }
+      });
+
+      /*var url = window.location;
+      var element = $('ul.nav a').filter(function() {
+          return this.href == url || url.href.indexOf(this.href) == 0;
+      }).addClass('active').parent().parent().addClass('in').parent();
+      if (element.is('li')) {
+          element.addClass('active');
+      }*/
+  });
+
+  $(window).resize(); // need to explicitly call resize event since the above function never gets triggered
+                      // when we "load" the menu
+</script>

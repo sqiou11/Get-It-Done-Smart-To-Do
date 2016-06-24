@@ -127,15 +127,16 @@ app.get('/get_tasks', function(req, res) {
 		});
 });
 
-app.get('/get_categories', function(req, res) {
-	var table = 'categories.' + req.query['username'];
+app.post('/new_task', function(req, res) {
+	var table = 'tasks.' + req.body['username'];
 	db.none('CREATE TABLE IF NOT EXISTS ' + table +
-		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
-		req.query['username'] + '_pkey PRIMARY KEY (id))')
+		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, done boolean NOT NULL, CONSTRAINT ' +
+		req.body['username'] + '_pkey PRIMARY KEY (id))')
 		.then(function() {
-			db.any('SELECT * FROM categories.' + req.query['username'])
-				.then(function(data) {
-					res.send(data);
+			var params = req.body['data'];
+			db.none('INSERT INTO ' + table + '(description, category, due, reminder, done) VALUES (${desc}, ${category}, ${due}, ${reminder}, NULL)', params)
+				.then(function() {
+					res.send('success');
 				})
 				.catch(function(error) {
 					console.log(error);
@@ -147,16 +148,29 @@ app.get('/get_categories', function(req, res) {
 		});
 });
 
-app.post('/new_task', function(req, res) {
-	var table = 'tasks.' + req.body['username'];
-	db.none('CREATE TABLE IF NOT EXISTS ' + table +
-		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, CONSTRAINT ' +
-		req.body['username'] + '_pkey PRIMARY KEY (id))')
+app.delete('/delete_task', function(req, res) {
+	var table = 'tasks.' + req.query['username'];
+	var params = req.query;
+	console.log(params);
+	db.none('DELETE FROM ' + table + ' WHERE id=${id}', params)
 		.then(function() {
-			var params = req.body['data'];
-			db.none('INSERT INTO ' + table + '(id, description, category, due, reminder) VALUES (${id}, ${desc}, ${category}, ${due}, ${reminder})', params)
-				.then(function() {
-					res.send('success');
+			res.send('success');
+		})
+		.catch(function(error) {
+			console.log(error);
+			res.send('error');
+		});
+})
+
+app.get('/get_categories', function(req, res) {
+	var table = 'categories.' + req.query['username'];
+	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
+		req.query['username'] + '_pkey PRIMARY KEY (id))')
+		.then(function() {
+			db.any('SELECT * FROM categories.' + req.query['username'])
+				.then(function(data) {
+					res.send(data);
 				})
 				.catch(function(error) {
 					console.log(error);

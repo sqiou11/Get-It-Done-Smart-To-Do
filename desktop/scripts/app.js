@@ -8,10 +8,50 @@ angular.module('BasicHttpAuthExample', [
     'Authentication',
     'Home',
     'ngRoute',
-    'ngCookies'
+    'ngCookies',
+    'ui.router'
 ])
 
-.config(['$routeProvider', function ($routeProvider) {
+.config(function($stateProvider, $urlRouterProvider) {
+  // For any unmatched url, send to /route1
+  //$urlRouterProvider.when("/", "/dash");
+  $urlRouterProvider.otherwise("/login");
+
+  $stateProvider
+    .state('login', {
+      url: '/login',
+      templateUrl: 'modules/authentication/views/login.html',
+      controller: 'LoginController'
+    })
+    .state('home', {
+      url: '/',
+      abstract: true,
+      controller: 'HomeController',
+      templateUrl: 'modules/home/views/home.html'
+    })
+    .state('home.dash', {
+      url: "",
+      templateUrl: "modules/home/views/main.html"
+    })
+    .state('home.tasks', {
+      url: "/tasks",
+      templateUrl: "modules/home/views/tasks.html",
+      controller: 'TaskController',
+      controllerAs: 'taskCtrl'
+    })
+
+    .state('home.activity', {
+      url: "/activity",
+      templateUrl: "modules/home/views/activity.html",
+      controller: 'ActivityDisplayController'
+    })
+    .state('productivity', {
+      //url: "/list",
+      //templateUrl: "modules/home/views/main.html",
+    });
+})
+
+/*.config(['$routeProvider', function ($routeProvider) {
   $routeProvider
     .when('/login', {
       controller: 'LoginController',
@@ -23,8 +63,8 @@ angular.module('BasicHttpAuthExample', [
       templateUrl: 'modules/home/views/home.html'
     })
 
-    .otherwise({ redirectTo: '/login' });
-}])
+    //.otherwise({ redirectTo: '/login' });
+}])*/
 
 .run(['$rootScope', '$location', '$cookieStore', '$http', function ($rootScope, $location, $cookieStore, $http) {
   // keep user logged in after page refresh
