@@ -18,7 +18,7 @@ angular.module('Home')
   this.end_time.setDate(this.start_time.getDate() + 1);
 
   this.drawChart = function() {
-    $http.get('http://127.0.0.1:8081/get_web_log', {
+    $http.get('http://127.0.0.1:8081/web_log', {
       params: {
         username: $rootScope.globals.currentUser.username,
         start_time: this.start_time.getTime(),

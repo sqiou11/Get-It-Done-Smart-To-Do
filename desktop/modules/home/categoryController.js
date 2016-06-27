@@ -40,7 +40,7 @@ angular.module('Home')
   };
 
   this.getCategories = function() {
-    $http.get('http://127.0.0.1:8081/get_categories', {
+    $http.get('http://127.0.0.1:8081/categories', {
       params: { username: $rootScope.globals.currentUser.username }
     })
     .success(function(response) {
@@ -54,7 +54,7 @@ angular.module('Home')
 
   this.submitCatChanges = function() {
     console.log(this.categories);
-    $http.post('http://127.0.0.1:8081/update_categories', {
+    $http.post('http://127.0.0.1:8081/categories', {
         username: $rootScope.globals.currentUser.username,
         data: catController.categories
     })

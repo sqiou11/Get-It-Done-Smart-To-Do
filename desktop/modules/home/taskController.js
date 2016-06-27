@@ -51,7 +51,7 @@ angular.module('Home')
 
   this.getTasks = function() {
     console.log("getting tasks");
-    $http.get('http://127.0.0.1:8081/get_tasks', {
+    $http.get('http://127.0.0.1:8081/tasks', {
       params: { username: $rootScope.globals.currentUser.username }
     })
     .success(function(response) {
@@ -75,7 +75,7 @@ angular.module('Home')
     //taskController.newTask.due = (new Date(taskController.newTask.due)).getTime();
     console.log(taskController.newTask);
 
-    $http.post('http://127.0.0.1:8081/new_task', {
+    $http.post('http://127.0.0.1:8081/tasks', {
       username: $rootScope.globals.currentUser.username,
       data: taskController.newTask
     })
@@ -98,7 +98,7 @@ angular.module('Home')
       }
     }
 
-    $http.delete('http://127.0.0.1:8081/delete_task', {
+    $http.delete('http://127.0.0.1:8081/tasks', {
       params: {
         username: $rootScope.globals.currentUser.username,
         id: deleteId
@@ -140,23 +140,62 @@ angular.module('Home')
   this.sort = function(data, sort_param='dueDate') {
     this.sortedTasks = {
       //overdue: [],
-      today: [],
-      tomorrow: [],
-      week: [],
-      later: []
+      today: {
+        date: moment(),
+        tasks: []
+      },
+      tomorrow: {
+        date: moment().add(1, 'days'),
+        tasks: []
+      },
+      week: {
+        date: undefined,
+        tasks: []
+      },
+      later: {
+        date: undefined,
+        tasks: []
+      }
     };
+    this.filledLists = 0;
+
     var today = moment();
     var tomorrow = moment().add(1, 'days');
     var weekFromToday = moment().add(7, 'days');
-    console.log(today);
     for(var i = 0; i < data.length; i++) {
       var dueDate = moment(data[i].due);
+      console.log(data[i].due);
+      console.log(dueDate);
       //console.log(dueDate.isSame(today, 'day'));
       //if(dueDate.isBefore(today, 'day')) this.sortedTasks.overdue.push(data[i]);
-      if(dueDate.isSame(today, 'day')) this.sortedTasks.today.push(data[i]);
-      else if(dueDate.isSame(tomorrow, 'day')) this.sortedTasks.tomorrow.push(data[i]);
-      else if(dueDate.isSame(today, 'week')) this.sortedTasks.week.push(data[i]);
-      else this.sortedTasks.later.push(data[i]);
+      if(dueDate.isSame(today, 'day')) {
+        if(this.sortedTasks.today.tasks.length === 0)
+          this.filledLists++;
+
+        this.sortedTasks.today.tasks.push(data[i]);
+      }
+      else if(dueDate.isSame(tomorrow, 'day')) {
+        if(this.sortedTasks.tomorrow.tasks.length === 0)
+          this.filledLists++;
+
+        this.sortedTasks.tomorrow.tasks.push(data[i]);
+      }
+      else if(dueDate.isSame(today, 'week')) {
+        if(this.sortedTasks.week.date === undefined)
+          this.sortedTasks.week.date = dueDate;
+
+        if(this.sortedTasks.week.tasks.length === 0)
+          this.filledLists++;
+        this.sortedTasks.week.tasks.push(data[i]);
+      }
+      else {
+        if(this.sortedTasks.later.date === undefined)
+          this.sortedTasks.later.date = dueDate;
+
+        if(this.sortedTasks.later.tasks.length === 0)
+          this.filledLists++;
+        this.sortedTasks.later.tasks.push(data[i]);
+      }
     }
   };
 

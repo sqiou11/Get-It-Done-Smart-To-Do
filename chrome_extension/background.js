@@ -104,7 +104,7 @@ function start_web_log(username, url, start_time) {
 
   // Set up an asynchronous AJAX POST request
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://127.0.0.1:8081/start_web_log', true);
+  xhr.open('POST', 'http://127.0.0.1:8081/web_log/start', true);
 
   var body = 'username=' + username +
               '&url=' + url +
@@ -130,7 +130,7 @@ function end_web_log(username, url, end_time) {
 
   // Set up an asynchronous AJAX POST request
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://127.0.0.1:8081/end_web_log', true);
+  xhr.open('POST', 'http://127.0.0.1:8081/web_log/end', true);
 
   var body = 'username=' + username +
               '&url=' + url +

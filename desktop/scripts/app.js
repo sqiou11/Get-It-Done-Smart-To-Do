@@ -4,7 +4,7 @@
 angular.module('Authentication', []);
 angular.module('Home', []);
 
-angular.module('BasicHttpAuthExample', [
+angular.module('RootController', [
     'Authentication',
     'Home',
     'ngRoute',
@@ -13,8 +13,6 @@ angular.module('BasicHttpAuthExample', [
 ])
 
 .config(function($stateProvider, $urlRouterProvider) {
-  // For any unmatched url, send to /route1
-  //$urlRouterProvider.when("/", "/dash");
   $urlRouterProvider.otherwise("/login");
 
   $stateProvider
@@ -31,6 +29,8 @@ angular.module('BasicHttpAuthExample', [
     })
     .state('home.dash', {
       url: "",
+      controller: 'TaskController',
+      controllerAs: 'taskCtrl',
       templateUrl: "modules/home/views/main.html"
     })
     .state('home.tasks', {
@@ -39,15 +39,18 @@ angular.module('BasicHttpAuthExample', [
       controller: 'TaskController',
       controllerAs: 'taskCtrl'
     })
-
     .state('home.activity', {
       url: "/activity",
       templateUrl: "modules/home/views/activity.html",
       controller: 'ActivityDisplayController'
     })
-    .state('productivity', {
+    .state('home.productivity', {
       //url: "/list",
       //templateUrl: "modules/home/views/main.html",
+    })
+    .state('home.settings', {
+      url: "/settings",
+      templateUrl: "modules/home/views/settings.html",
     });
 })
 
