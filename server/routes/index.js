@@ -4,4 +4,5 @@ module.exports = function (app, appEnv) {
     require('./tasks')(app, appEnv);
     require('./categories')(app, appEnv);
     require('./web_log')(app, appEnv);
+    require('./web_preference')(app, appEnv);
 };

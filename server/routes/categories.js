@@ -31,24 +31,46 @@ module.exports = function(app, appEnv) {
   		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
   		req.body['username'] + '_pkey PRIMARY KEY (id))')
   		.then(function() {
-  			for(var i = 0; i < req.body['data'].length; i++) {
-  				var params = req.body['data'][i];
-  				db.none('INSERT INTO ' + table + '(id,name,monitor) VALUES (${id},${name},${monitor}) ' +
-  				'ON CONFLICT (id) ' +
-  				'DO UPDATE SET name=${name},monitor=${monitor}', params)
-  					.then(function() {
-  						res.send('success');
-  					})
-  					.catch(function(error) {
-  						console.log('could not update categories table');
-  						console.log(error);
-  					});
-  				}
+				var params = req.body['data'];
+				db.none('INSERT INTO ' + table + '(name,monitor) VALUES (${name},${monitor})', params)
+					.then(function() {
+						res.send('success');
+					})
+					.catch(function(error) {
+						console.log('could not insert into categories table');
+						console.log(error);
+					});
   		})
   		.catch(function(error) {
   			console.log('could not create categories table');
   			console.log(error);
   		});
+  });
+
+  router.put('/', function(req, res) {
+    var table = 'categories.' + req.body['username'];
+		var params = req.body['data'];
+		db.none('UPDATE ' + table + ' SET name=${name},monitor=${monitor} WHERE id=${id}', params)
+			.then(function() {
+				res.send('success');
+			})
+			.catch(function(error) {
+				console.log('could not update categories table');
+				console.log(error);
+			});
+  });
+
+  router.delete('/', function(req, res) {
+    var table = 'categories.' + req.query['username'];
+		var params = req.query;
+		db.none('DELETE FROM ' + table + ' WHERE id=${id}', params)
+			.then(function() {
+				res.send('success');
+			})
+			.catch(function(error) {
+				console.log('could not update categories table');
+				console.log(error);
+			});
   });
 
   app.use('/categories', router);

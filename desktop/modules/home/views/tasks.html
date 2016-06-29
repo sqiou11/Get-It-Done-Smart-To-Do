@@ -4,68 +4,81 @@
   </div>
 </div>
 
+<div class="btn-group pull-right">
+  <button type="button" class="btn btn-default" ng-click="taskCtrl.viewMode='dueDate'; taskCtrl.sort(taskCtrl.tasks)">Sort by Date</button>
+  <button type="button" class="btn btn-primary" ng-click="taskCtrl.viewMode='category'; taskCtrl.sort(taskCtrl.tasks)">Sort by Category</button>
+</div>
+
 <div ng-repeat="(key, list) in taskCtrl.sortedTasks">
   <h3>{{key | uppercase}}</h3>
   <ul class="list-group">
-    <li ng-repeat="task in list.tasks" class="list-group-item row" ng-mouseenter="taskCtrl.mousedOverTask[task.id]=true" ng-mouseleave="taskCtrl.mousedOverTask[task.id]=false">
-      <div class="col-xs-1">
-        <a href>
-          <span class="glyphicon glyphicon-unchecked" ng-show="!task.done" ng-click="task.done=true"></span>
-          <span class="glyphicon glyphicon-check" ng-show="!!task.done" ng-click="task.done=false"></span>
-        </a>
-      </div>
-      <div class="col-xs-4">{{task.description}}</div>
-      <div class="col-xs-4">{{task.due | date:'MM/dd hh:mma'}}</div>
-      <div class="col-xs-2">{{task.category}}</div>
-      <div class="col-xs-1">
-        <div class="btn-group" ng-show="taskCtrl.mousedOverTask[task.id]">
-          <a href class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span class="glyphicon glyphicon-option-horizontal"></span>
+    <li ng-repeat="task in list.tasks" class="list-group-item" ng-mouseenter="taskCtrl.mousedOverTask[task.id]=true" ng-mouseleave="taskCtrl.mousedOverTask[task.id]=false">
+      <div class="row">
+        <div class="col-xs-1">
+          <a href>
+            <span class="glyphicon glyphicon-unchecked" ng-show="!task.done" ng-click="task.done=true"></span>
+            <span class="glyphicon glyphicon-check" ng-show="!!task.done" ng-click="task.done=false"></span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <li><a href>Edit</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href ng-click="taskCtrl.deleteTask(task.id)">Delete</a></li>
-          </ul>
+        </div>
+        <div class="col-xs-4">{{task.description}}</div>
+        <div class="col-xs-4">{{task.due | date:'MM/dd hh:mma'}}</div>
+        <div class="col-xs-2">{{task.category}}</div>
+        <div class="col-xs-1">
+          <div class="dropdown" ng-show="taskCtrl.mousedOverTask[task.id]">
+            <a href class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="glyphicon glyphicon-option-horizontal"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li><a href>Edit</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href ng-click="taskCtrl.deleteTask(task.id)">Delete</a></li>
+            </ul>
+          </div>
         </div>
       </div>
     </li>
 
     <!-- form to add a new task -->
-    <li class="list-group-item row">
-      <div class="col-xs-12">
-        <a href ng-click="taskCtrl.setCreateTask(key, true)" ng-show="!taskCtrl.isCreatingTask(key)">
-          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Task
-        </a>
+    <li class="list-group-item">
+      <div class="row">
+        <div class="col-xs-12" ng-show="!taskCtrl.isCreatingTask(key)">
+          <a href ng-click="taskCtrl.setCreateTask(key, true)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Task
+          </a>
+        </div>
       </div>
       <form ng-show="taskCtrl.isCreatingTask(key)">
         <div class="row">
-          <div class="col-xs-5">
-            <input type="text" name="description" id="description" class="form-control" ng-model="taskCtrl.newTask.desc" placeholder="Description" required />
+          <div class="col-xs-1">
+            <a href>
+              <span class="glyphicon glyphicon-unchecked"></span>
+            </a>
           </div>
-          <div class="col-xs-2">
-            <select class="form-control" name="category" id="category" ng-model="taskCtrl.newTask.category" required>
-              <option disabled selected value="">Select a category...</option>
-              <option ng-repeat="category in taskCtrl.categories">{{category.name}}</option>
-            </select>
+          <div class="col-xs-4">
+            <input type="text" name="description" id="description" class="invis" ng-model="taskCtrl.newTask.desc" placeholder="Description" required />
           </div>
           <div class="col-xs-3">
-            <div class="form-group">
-              <div class="input-group date due-date" id="dueDatePicker-{{key}}">
-                <input type="text" class="form-control" placeholder="Deadline" id="dueDatePicker-input"/>
-                <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
-              </div>
+            <input type="text" class="invis" placeholder="Deadline" id="dueDatePicker-{{key}}"/>
+          </div>
+          <div class="col-xs-2">
+            <div class="dropdown">
+              <a href class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-list-ul fa-fw"></i></a> {{taskCtrl.newTask.category}}
+              <ul class="dropdown-menu">
+                <li ng-repeat="category in taskCtrl.categories"><a href ng-click="taskCtrl.newTask.category=category.name">{{category.name}}</a></li>
+              </ul>
             </div>
           </div>
           <div class="col-xs-2">
-            <select class="form-control" name="reminder" id="reminder" ng-model="taskCtrl.newTask.reminder">
-              <option disabled selected value="">Select a reminder...</option>
-              <option value="15">15 minutes</option>
-              <option value="30">30 minutes</option>
-            </select>
+            <div class="dropdown">
+              <a href class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-clock-o fa-fw"></i></a>  {{taskCtrl.newTask.reminder}}
+              <ul class="dropdown-menu">
+                <li><a href ng-click="taskCtrl.newTask.reminder='15 minutes'">15 minutes</a></li>
+                <li><a href ng-click="taskCtrl.newTask.reminder='30 minutes'">30 minutes</a></li>
+              </ul>
+            </div>
           </div>
         </div>
-        <button type="button" class="btn btn-primary" ng-click="taskCtrl.setCreateTask(key, false); taskCtrl.addTask()">Add</button>
+        <button type="button" class="btn btn-primary btn-sm" ng-click="taskCtrl.setCreateTask(key, false); taskCtrl.addTask()">Add</button>
         <a href ng-click="taskCtrl.setCreateTask(key, false)">Cancel</a>
       </form>
     </li>

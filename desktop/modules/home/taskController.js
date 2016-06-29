@@ -37,7 +37,7 @@ angular.module('Home')
   };
 
   this.getCategories = function() {
-    $http.get('http://127.0.0.1:8081/get_categories', {
+    $http.get('http://127.0.0.1:8081/categories', {
       params: { username: $rootScope.globals.currentUser.username }
     })
     .success(function(response) {
@@ -59,7 +59,7 @@ angular.module('Home')
         console.log(response);
         taskController.tasks = response;
         taskController.numTasks = response.length;
-        taskController.sort(response, 'dueDate');
+        taskController.sort(response);
         taskController.mousedOverTask = {};
         for(var i = 0; i < response.length; i++)
           taskController.mousedOverTask[response[i].id] = false;
@@ -115,12 +115,6 @@ angular.module('Home')
   };
 
   this.initForm = function(key) {
-    this.newTask.desc = '';
-    this.newTask.category = '';
-    this.newTask.due = '';
-    this.newTask.reminder = '';
-    this.getCategories();
-
     var dueDateElement = '#dueDatePicker-' + key;
     if($(dueDateElement).data("DateTimePicker") !== undefined) {
       console.log($(dueDateElement));
@@ -135,67 +129,112 @@ angular.module('Home')
         taskController.newTask.due = e.date._d;
       });
     }
+
+    this.newTask.desc = '';
+    this.newTask.reminder = '';
+
+    if(this.viewMode === 'dueDate') {
+      this.newTask.category = '';
+      this.newTask.due = this.sortedTasks[key].date;
+      $(dueDateElement).data("DateTimePicker").defaultDate(this.sortedTasks[key].date);
+    } else {
+      this.newTask.category = key;
+      this.newTask.due = '';
+      $(dueDateElement).data("DateTimePicker").defaultDate(moment());
+    }
+    this.getCategories();
   };
 
-  this.sort = function(data, sort_param='dueDate') {
-    this.sortedTasks = {
-      //overdue: [],
-      today: {
-        date: moment(),
-        tasks: []
-      },
-      tomorrow: {
-        date: moment().add(1, 'days'),
-        tasks: []
-      },
-      week: {
-        date: undefined,
-        tasks: []
-      },
-      later: {
-        date: undefined,
-        tasks: []
-      }
-    };
-    this.filledLists = 0;
+  this.sort = function(data) {
+    if(this.viewMode === 'dueDate') {
+      this.sortedTasks = {
+        //overdue: [],
+        today: {
+          date: moment(),
+          tasks: []
+        },
+        tomorrow: {
+          date: moment().add(1, 'days'),
+          tasks: []
+        },
+        week: {
+          date: moment().add(2, 'days'),
+          tasks: []
+        },
+        later: {
+          date: moment().add(8, 'days'),
+          tasks: []
+        }
+      };
+      this.filledLists = 0;
 
-    var today = moment();
-    var tomorrow = moment().add(1, 'days');
-    var weekFromToday = moment().add(7, 'days');
-    for(var i = 0; i < data.length; i++) {
-      var dueDate = moment(data[i].due);
-      console.log(data[i].due);
-      console.log(dueDate);
-      //console.log(dueDate.isSame(today, 'day'));
-      //if(dueDate.isBefore(today, 'day')) this.sortedTasks.overdue.push(data[i]);
-      if(dueDate.isSame(today, 'day')) {
-        if(this.sortedTasks.today.tasks.length === 0)
-          this.filledLists++;
+      var today = moment();
+      var tomorrow = moment().add(1, 'days');
+      var weekFromToday = moment().add(7, 'days');
+      for(var i = 0; i < data.length; i++) {
+        var dueDate = moment(data[i].due);
+        console.log(data[i].due);
+        console.log(dueDate);
+        //console.log(dueDate.isSame(today, 'day'));
+        //if(dueDate.isBefore(today, 'day')) this.sortedTasks.overdue.push(data[i]);
+        if(dueDate.isSame(today, 'day')) {
+          if(this.sortedTasks.today.tasks.length === 0)
+            this.filledLists++;
 
-        this.sortedTasks.today.tasks.push(data[i]);
-      }
-      else if(dueDate.isSame(tomorrow, 'day')) {
-        if(this.sortedTasks.tomorrow.tasks.length === 0)
-          this.filledLists++;
+          this.sortedTasks.today.tasks.push(data[i]);
+        }
+        else if(dueDate.isSame(tomorrow, 'day')) {
+          if(this.sortedTasks.tomorrow.tasks.length === 0)
+            this.filledLists++;
 
-        this.sortedTasks.tomorrow.tasks.push(data[i]);
-      }
-      else if(dueDate.isSame(today, 'week')) {
-        if(this.sortedTasks.week.date === undefined)
-          this.sortedTasks.week.date = dueDate;
+          this.sortedTasks.tomorrow.tasks.push(data[i]);
+        }
+        else if(dueDate.isSame(today, 'week')) {
+          if(this.sortedTasks.week.date === undefined)
+            this.sortedTasks.week.date = dueDate;
 
-        if(this.sortedTasks.week.tasks.length === 0)
-          this.filledLists++;
-        this.sortedTasks.week.tasks.push(data[i]);
-      }
-      else {
-        if(this.sortedTasks.later.date === undefined)
-          this.sortedTasks.later.date = dueDate;
+          if(this.sortedTasks.week.tasks.length === 0)
+            this.filledLists++;
+          this.sortedTasks.week.tasks.push(data[i]);
+        }
+        else {
+          if(this.sortedTasks.later.date === undefined)
+            this.sortedTasks.later.date = dueDate;
 
-        if(this.sortedTasks.later.tasks.length === 0)
-          this.filledLists++;
-        this.sortedTasks.later.tasks.push(data[i]);
+          if(this.sortedTasks.later.tasks.length === 0)
+            this.filledLists++;
+          this.sortedTasks.later.tasks.push(data[i]);
+        }
       }
+    } else if(this.viewMode === 'category') {
+      console.log(this.viewMode);
+      this.sortedTasks = {};
+      this.filledLists = 0;
+
+      for(var i = 0; i < data.length; i++) {
+        //console.log(data[i]);
+        if(this.sortedTasks[data[i].category] === undefined) {
+          console.log('creating new task list for category ' + data[i].category);
+          this.sortedTasks[data[i].category] = { tasks: [] };
+        }
+        var addDue = moment(data[i].due);
+        var flag = false;
+        console.log(this.sortedTasks[data[i].category].tasks.length);
+        for(var j = 0; j < this.sortedTasks[data[i].category].tasks.length; j++) {
+          var currDue = moment(this.sortedTasks[data[i].category].tasks[j].due);
+          if(addDue.isBefore(currDue) && j < this.sortedTasks[data[i].category].tasks.length) {
+            this.sortedTasks[data[i].category].tasks.splice(j, 0, data[i]);
+            flag = true;
+            break;
+          }
+          console.log(this.sortedTasks[data[i].category].tasks);
+        }
+        if(!flag) {
+          this.sortedTasks[data[i].category].tasks.push(data[i]);
+        }
+      }
+    } else {
+      console.log('bad viewMode');
     }
   };
 
