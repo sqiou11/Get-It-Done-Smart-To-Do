@@ -76,12 +76,12 @@ angular.module('Home')
     var urlIndex = { "other websites": 0 };
     var currIndex = 1;
     var timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
-    var newIndex = 0;
-    var newURL = 0;
 
     for(var i = 0; i < data.length; i++) {
       console.log(data[i].url);
-      if(urlIndex[data[i].url] === undefined) {
+      var newIndex = urlIndex[data[i].url];
+      var newURL = data[i].url;
+      if(newIndex === undefined) {  // if the current url has no mapped index
         for(var j = 0; j < adController.preferences.length; j++) {
           if(adController.preferences[j].url === data[i].url) { // if the unknown url is one of our preferences, create new series for it
             urlIndex[data[i].url] = currIndex;  // map new url to current index
@@ -89,17 +89,19 @@ angular.module('Home')
             r.series.push({ name: data[i].url, data: [] }); // push a new object into the newly created series
             currIndex += 1;
 
-            newIndex = urlIndex[data[i].url];
-            newURL = data[i].url;
-          } else {  // otherwise just put it into the "other" series
-            newIndex = 0;
-            newURL = "other websites"
+            newIndex = urlIndex[data[i].url]; // update newIndex to the newly created index
+            break;
           }
+        }
+        if(newIndex === undefined) {  // otherwise just put it into the "other" series
+          newIndex = 0;
+          newURL = "other websites"
         }
       }
       // if the end of the last entry === the beginning of the new entry, just change the end time for the last entry to the end time of the new one
       var seriesEnd = r.series[newIndex].data.length-1;
       if(seriesEnd >= 0 && r.series[newIndex].data[seriesEnd][2] === parseInt(data[i].start_time) - timezoneOffset) {
+        if(data[i].active) data[i].end_time = Date.now();
         r.series[newIndex].data[seriesEnd][2] = parseInt(data[i].end_time) - timezoneOffset;
       }
       else {  // otherwise add a new entry to the series

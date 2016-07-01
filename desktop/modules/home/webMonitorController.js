@@ -23,19 +23,15 @@ angular.module('Home')
   };
 
   this.addWebPreference = function() {
-    //this.preferences.push();
     this.addNewFlag = false;
+    if(this.newPreference[this.newPreference.length-1] !== '/')
+      this.newPreference += '/';
 
     $http.post('http://127.0.0.1:8081/web_preferences', {
       username: $rootScope.globals.currentUser.username,
       data: webMonController.newPreference
     })
     .success(function(response) {
-      if(response !== "error") {
-
-      } else {
-
-      }
       webMonController.getWebPreferences();
     });
   };
@@ -48,11 +44,6 @@ angular.module('Home')
       }
     })
     .success(function(response) {
-      if(response !== "error") {
-
-      } else {
-
-      }
       webMonController.getWebPreferences();
     });
   };
@@ -61,6 +52,10 @@ angular.module('Home')
     this.addNewFlag = true;
     this.newPreference = '';
   };
+
+  this.validateUrl = function() {
+    var pattern = RegExp()
+  }
 
   this.getWebPreferences();
 
