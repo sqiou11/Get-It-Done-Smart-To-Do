@@ -37,6 +37,18 @@ module.exports = function(app, appEnv) {
   		});
   });
 
+  router.put('/', function(req, res) {
+    var params = req.body['data'];
+  	db.none('UPDATE tasks.' + req.body['username'] + ' SET description=${description},category=${category},due=${due},reminder=${reminder},done=${done} WHERE id=${id}', params)
+  		.then(function(data) {
+  			res.send('success');
+  		})
+  		.catch(function(error) {
+  			console.log(error);
+  			res.send('error');
+  		});
+  });
+
   router.delete('/', function(req, res) {
   	var table = 'tasks.' + req.query['username'];
   	var params = req.query;

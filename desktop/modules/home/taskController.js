@@ -7,12 +7,15 @@ angular.module('Home')
   this.tasks = [];
   this.sortedTasks = {};
   this.numTasks = 0;
+  this.numPrevious = 0;
+  this.numUpcoming = 0;
   this.createTaskFlag = false;
   this.newTask = {};
   this.categories = [];
   this.viewMode = 'dueDate';
   this.mousedOverTask = {};
   this.createTaskFlag = {};
+  this.archiveTasks = true;
 
   this.setCreateTask = function(key, value) {
     if(value === true) {
@@ -24,9 +27,8 @@ angular.module('Home')
       }
       this.initForm(key);
     }
-    else {
+    else
       this.createTaskFlag[key] = false;
-    }
   };
 
   this.isCreatingTask = function(key) {
@@ -34,6 +36,24 @@ angular.module('Home')
       this.createTaskFlag[key] = false;
 
     return this.createTaskFlag[key] === true;
+  };
+
+  this.toggleFinish = function(taskId) {
+    var updateId = 0;
+    for(var i = 0; i < this.numTasks; i++) {
+      if(this.tasks[i].id === taskId) {
+        this.tasks[i].done = moment();
+        updateId = i;
+      }
+    }
+
+    $http.put('http://127.0.0.1:8081/tasks', {
+      username: $rootScope.globals.currentUser.username,
+      data: taskController.tasks[updateId]
+    })
+    .success(function(response) {
+      taskController.getTasks();
+    });
   };
 
   this.getCategories = function() {
@@ -71,20 +91,11 @@ angular.module('Home')
   };
 
   this.addTask = function() {
-    //taskController.newTask.id = taskController.numTasks;
-    //taskController.newTask.due = (new Date(taskController.newTask.due)).getTime();
-    console.log(taskController.newTask);
-
     $http.post('http://127.0.0.1:8081/tasks', {
       username: $rootScope.globals.currentUser.username,
       data: taskController.newTask
     })
     .success(function(response) {
-      if(response !== "error") {
-
-      } else {
-
-      }
       taskController.getTasks();
     });
   };
@@ -105,11 +116,6 @@ angular.module('Home')
       }
     })
     .success(function(response) {
-      if(response !== "error") {
-
-      } else {
-
-      }
       taskController.getTasks();
     });
   };
@@ -135,8 +141,8 @@ angular.module('Home')
 
     if(this.viewMode === 'dueDate') {
       this.newTask.category = '';
-      this.newTask.due = this.sortedTasks[key].date;
-      $(dueDateElement).data("DateTimePicker").defaultDate(this.sortedTasks[key].date);
+      this.newTask.due = this.sortedTasks.upcoming[key].date;
+      $(dueDateElement).data("DateTimePicker").defaultDate(this.sortedTasks.upcoming[key].date);
     } else {
       this.newTask.category = key;
       this.newTask.due = '';
@@ -148,62 +154,81 @@ angular.module('Home')
   this.sort = function(data) {
     if(this.viewMode === 'dueDate') {
       this.sortedTasks = {
-        //overdue: [],
-        today: {
-          date: moment(),
-          tasks: []
+        past: {
+          overdue: [],
+          completed: []
         },
-        tomorrow: {
-          date: moment().add(1, 'days'),
-          tasks: []
-        },
-        week: {
-          date: moment().add(2, 'days'),
-          tasks: []
-        },
-        later: {
-          date: moment().add(8, 'days'),
-          tasks: []
+        upcoming: {
+          today: {
+            date: moment(),
+            tasks: []
+          },
+          tomorrow: {
+            date: moment().add(1, 'days'),
+            tasks: []
+          },
+          week: {
+            date: moment().add(2, 'days'),
+            tasks: []
+          },
+          later: {
+            date: moment().add(8, 'days'),
+            tasks: []
+          }
         }
       };
       this.filledLists = 0;
+      this.numPrevious = 0;
+      this.numUpcoming = 0;
 
       var today = moment();
       var tomorrow = moment().add(1, 'days');
       var weekFromToday = moment().add(7, 'days');
       for(var i = 0; i < data.length; i++) {
         var dueDate = moment(data[i].due);
-        console.log(data[i].due);
-        console.log(dueDate);
-        //console.log(dueDate.isSame(today, 'day'));
-        //if(dueDate.isBefore(today, 'day')) this.sortedTasks.overdue.push(data[i]);
-        if(dueDate.isSame(today, 'day')) {
-          if(this.sortedTasks.today.tasks.length === 0)
-            this.filledLists++;
 
-          this.sortedTasks.today.tasks.push(data[i]);
+        if(dueDate.isBefore(today, 'day')) {
+          console.log('past task');
+          console.log(data[i]);
+          if(data[i].done)
+            this.sortedTasks.past.completed.push(data[i]);
+          else
+            this.sortedTasks.past.overdue.push(data[i]);
+          this.numPrevious++;
+        }
+        else if(dueDate.isSame(today, 'day')) {
+          console.log('today task');
+          console.log(data[i]);
+          if(this.sortedTasks.upcoming.today.tasks.length === 0)
+            this.filledLists++;
+          this.sortedTasks.upcoming.today.tasks.push(data[i]);
+          this.numUpcoming++;
         }
         else if(dueDate.isSame(tomorrow, 'day')) {
-          if(this.sortedTasks.tomorrow.tasks.length === 0)
+          console.log('tomorrow task');
+          console.log(data[i]);
+          if(this.sortedTasks.upcoming.tomorrow.tasks.length === 0)
             this.filledLists++;
-
-          this.sortedTasks.tomorrow.tasks.push(data[i]);
+          this.sortedTasks.upcoming.tomorrow.tasks.push(data[i]);
+          this.numUpcoming++;
         }
         else if(dueDate.isSame(today, 'week')) {
-          if(this.sortedTasks.week.date === undefined)
-            this.sortedTasks.week.date = dueDate;
+          if(this.sortedTasks.upcoming.week.date === undefined)
+            this.sortedTasks.upcoming.week.date = dueDate;
 
-          if(this.sortedTasks.week.tasks.length === 0)
+          if(this.sortedTasks.upcoming.week.tasks.length === 0)
             this.filledLists++;
-          this.sortedTasks.week.tasks.push(data[i]);
+          this.sortedTasks.upcoming.week.tasks.push(data[i]);
+          this.numUpcoming++;
         }
         else {
-          if(this.sortedTasks.later.date === undefined)
-            this.sortedTasks.later.date = dueDate;
+          if(this.sortedTasks.upcoming.later.date === undefined)
+            this.sortedTasks.upcoming.later.date = dueDate;
 
-          if(this.sortedTasks.later.tasks.length === 0)
+          if(this.sortedTasks.upcoming.later.tasks.length === 0)
             this.filledLists++;
-          this.sortedTasks.later.tasks.push(data[i]);
+          this.sortedTasks.upcoming.later.tasks.push(data[i]);
+          this.numUpcoming++;
         }
       }
     } else if(this.viewMode === 'category') {
@@ -237,11 +262,6 @@ angular.module('Home')
       console.log('bad viewMode');
     }
   };
-
-  $scope.$on('getTasks', function(e) {
-    console.log('getTasks broadcast');
-    taskController.getTasks();
-  });
 
   this.getTasks();
 }]);

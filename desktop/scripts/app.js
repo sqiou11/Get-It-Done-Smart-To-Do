@@ -33,9 +33,15 @@ angular.module('RootController', [
       controllerAs: 'taskCtrl',
       templateUrl: "modules/home/views/main.html"
     })
-    .state('home.tasks', {
-      url: "/tasks",
-      templateUrl: "modules/home/views/tasks.html",
+    .state('home.upcomingTasks', {
+      url: "/tasks/upcoming",
+      templateUrl: "modules/home/views/upcoming_tasks.html",
+      controller: 'TaskController',
+      controllerAs: 'taskCtrl'
+    })
+    .state('home.pastTasks', {
+      url: "/tasks/past",
+      templateUrl: "modules/home/views/past_tasks.html",
       controller: 'TaskController',
       controllerAs: 'taskCtrl'
     })

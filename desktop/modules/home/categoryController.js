@@ -31,8 +31,6 @@ angular.module('Home')
         return;
       }
     }
-    //newCat.id = this.categories.length;
-    //this.categories.push(newCat);
 
     $http.post('http://127.0.0.1:8081/categories', {
       username: $rootScope.globals.currentUser.username,
@@ -48,15 +46,14 @@ angular.module('Home')
     console.log("editCategory()");
     console.log(this.edit);
     this.edit.id = this.categories[index].id; // grab the table ID of the category that was modified
-    //this.categories[index] = editObj;
 
     $http.put('http://127.0.0.1:8081/categories', {
       username: $rootScope.globals.currentUser.username,
       data: catController.edit
     })
     .success(function(response) {
-      this.edit = {};
-      this.getCategories();
+      catController.edit = {};
+      catController.getCategories();
     });
   };
 

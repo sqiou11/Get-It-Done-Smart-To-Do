@@ -23,8 +23,8 @@ var appEnv = {
 routes = require('./routes')(app, appEnv);
 
 /*nunjucks.configure('views', {
-    autoescape: true,
-    express: app
+  autoescape: true,
+  express: app
 });*/
 
 // all chrome extension functions

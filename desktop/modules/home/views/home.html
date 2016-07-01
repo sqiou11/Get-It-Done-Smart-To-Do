@@ -39,8 +39,16 @@
             <li>
               <a href ui-sref=".dash"><i class="fa fa-home fa-fw"></i> Home</a>
             </li>
-            <li>
-              <a href ui-sref=".tasks"><i class="fa fa-sticky-note fa-fw"></i> Tasks</a>
+            <li ng-controller="TaskController as taskCtrl">
+              <a href><i class="fa fa-sticky-note fa-fw"></i> Tasks</a>
+              <ul class="nav nav-second-level">
+                <li>
+                  <a href ui-sref=".upcomingTasks">Upcoming <span class="badge" class="pull-right">{{taskCtrl.numUpcoming}}</span></a>
+                </li>
+                <li>
+                  <a href ui-sref=".pastTasks">Previous <span class="badge" class="pull-right">{{taskCtrl.numPrevious}}</span></a>
+                </li>
+              </ul>
             </li>
             <li ng-controller="CategoryController as categoryCtrl">
               <a href aria-expanded="false"><i class="fa fa-list-ul fa-fw"></i> Categories<span class="fa arrow"></span></a>
