@@ -51,7 +51,6 @@ module.exports = function(app, appEnv) {
   router.get('/', function(req, res) {
   	var params = {
   		user: req.query['username'],
-  		url: req.query['url'],
   		start_time: req.query['start_time'],
   		end_time: req.query['end_time']
   	};
