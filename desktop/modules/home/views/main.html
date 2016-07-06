@@ -50,10 +50,10 @@
   const asyncMsgBtn = document.getElementById('recordAppActivityBtn')
 
   asyncMsgBtn.addEventListener('click', function () {
-    ipc.send('record-toggle-message', 'ping')
+    ipc.send('asynchronous-message', 'ping')
   })
 
-  ipc.on('record-toggle-reply', function (event, arg) {
+  ipc.on('asynchronous-reply', function (event, arg) {
     const message = `Forked process to record desktop activity: ${arg}`
     document.getElementById('async-reply').innerHTML = message
   })

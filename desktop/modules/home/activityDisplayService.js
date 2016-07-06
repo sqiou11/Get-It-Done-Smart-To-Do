@@ -11,7 +11,7 @@ angular.module('Home')
   var end_time = undefined;
   var graphElement = undefined;
 
-  var ActivityDisplay = function(graph, dParam) {
+  var ActivityDisplay = function(graph, dParam, log_type) {
     this.graphElement = undefined;
     this.start_time = undefined;
     this.end_time = undefined;
@@ -19,11 +19,13 @@ angular.module('Home')
     this.displayParam = '';
     this.chartParams = {};
     this.preferences = [];
+    this.url = '';
 
     this.initialize = function() {
-      console.log('ActivityDisplay obj initialized')
+      var baseUrl = 'http://127.0.0.1:8081/'
       this.graphElement = graph;
       this.displayParam = dParam;
+      this.url = baseUrl + log_type;
       this.setRange(this.displayParam);
     }
     this.getDisplayParam = function() {
@@ -54,9 +56,14 @@ angular.module('Home')
     this.drawChart = function() {
       var self = this;
       // get the users web preferences, with the callback function to be called aftwards
-      this.getWebPreferences(function() {
-        self.createGraphData();
-      });
+      if(this.url === 'http://127.0.0.1:8081/web_log') {
+        this.getWebPreferences(function() {
+          self.createGraphData();
+        });
+      }
+      else {
+        this.createGraphData();
+      }
     }
 
     this.getWebPreferences = function(callback) {
@@ -76,12 +83,22 @@ angular.module('Home')
     }
 
     this.createGraphData = function() {
-      this.chartParams = {
-        series: [ { name: "other websites", data: [] } ],
-        urls: [ "other websites" ]
-      };
-      var urlIndex = { "other websites": 0 };
-      var currIndex = 1;
+      if(this.url === 'http://127.0.0.1:8081/web_log') {
+        this.chartParams = {
+          series: [ { name: "other websites", data: [] } ],
+          categories: [ "other websites" ]
+        };
+        var urlIndex = { "other websites": 0 };
+        var currIndex = 1;
+      }
+      else {
+        this.chartParams = {
+          series: [],
+          categories: []
+        };
+        var urlIndex = { };
+        var currIndex = 0;
+      }
 
       this.getWebData(moment(this.start_time), moment(this.end_time), urlIndex, currIndex, [], 0);
     }
@@ -113,7 +130,7 @@ angular.module('Home')
         for(var i = 0; i < this.chartParams.series.length; i++)
           this.chartParams.series[i].data.push([start.valueOf() - timezoneOffset, 0]);
 
-      $http.get('http://127.0.0.1:8081/web_log', {
+      $http.get(self.url, {
         params: {
           username: $rootScope.globals.currentUser.username,
           start_time: start.valueOf(),
@@ -122,28 +139,45 @@ angular.module('Home')
       })
       .success(function (data) {
         if(data !== "error") {
+          console.log(data);
           for(var i = 0; i < data.length; i++) {
-            var newIndex = urlIndex[data[i].url];
-            var newURL = data[i].url;
+            var newNameOrUrl = data[i].url || data[i].name;
+            console.log(newNameOrUrl);
+            var newIndex = urlIndex[newNameOrUrl];
+            //var newURL = newNameOrUrl;
             if(newIndex === undefined) {  // if the current url has no mapped index
               for(var j = 0; j < self.preferences.length; j++) {
-                if(self.preferences[j].url === data[i].url) { // if the unknown url is one of our preferences, create new series for it
-                  urlIndex[data[i].url] = currIndex;  // map new url to current index
-                  self.chartParams.urls[currIndex] = data[i].url;
-                  self.chartParams.series.push({ name: data[i].url, data: [] }); // push a new object into the newly created series
+                if(self.preferences[j].url === newNameOrUrl) { // if the unknown url is one of our preferences, create new series for it
+                  urlIndex[newNameOrUrl] = currIndex;  // map new url to current index
+                  self.chartParams.categories[currIndex] = newNameOrUrl;
+                  self.chartParams.series.push({ name: newNameOrUrl, data: [] }); // push a new object into the newly created series
                   if(self.displayParam !== 'day') {
                     var newZeroArray = $.extend(true, [], initPoints);
                     self.chartParams.series[currIndex].data = newZeroArray;
                   }
 
                   currIndex += 1;
-                  newIndex = urlIndex[data[i].url]; // update newIndex to the newly created index
+                  newIndex = urlIndex[newNameOrUrl]; // update newIndex to the newly created index
                   break;
                 }
               }
+              if(self.url === 'http://127.0.0.1:8081/app_log') {
+                console.log('new app: ' + newNameOrUrl + ' assigned to index ' + currIndex);
+                urlIndex[newNameOrUrl] = currIndex;  // map new url to current index
+                self.chartParams.categories[currIndex] = newNameOrUrl;
+                self.chartParams.series.push({ name: newNameOrUrl, data: [] }); // push a new object into the newly created series
+                if(self.displayParam !== 'day') {
+                  var newZeroArray = $.extend(true, [], initPoints);
+                  self.chartParams.series[currIndex].data = newZeroArray;
+                }
+
+                currIndex += 1;
+                newIndex = urlIndex[newNameOrUrl]; // update newIndex to the newly created index
+                console.log('new series created, newIndex == ' + newIndex);
+              }
               if(newIndex === undefined) {  // otherwise just put it into the "other" series
                 newIndex = 0;
-                newURL = "other websites"
+                newNameOrUrl = "other websites"
               }
             }
             if(self.displayParam === 'day') {
@@ -178,7 +212,6 @@ angular.module('Home')
 
     this.drawColumnRange = function() {
       var self = this;
-      console.log(this.graphElement);
       this.graphElement.highcharts({
         chart: {
             type: 'columnrange',
@@ -187,7 +220,7 @@ angular.module('Home')
         },
         title: { text: "Your Activity for " + self.start_time.format('dddd, MMMM Do')},
         exporting: { enabled: false },
-        xAxis: { categories: self.chartParams.urls },
+        xAxis: { categories: self.chartParams.categories },
         yAxis: {
           type: 'datetime',
           dateTimeLabelFormats: {
@@ -203,7 +236,9 @@ angular.module('Home')
         },
         tooltip: {
           formatter: function() {
-            return 'Visited ' + this.x + ' from ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.low) + ' to ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.high);
+            var verb = 'Visited '
+            if(self.url === 'http://127.0.0.1:8081/app_log') verb = 'Used '
+            return verb + this.x + ' from ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.low) + ' to ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.high);
           }
         },
         series: self.chartParams.series
@@ -225,10 +260,16 @@ angular.module('Home')
         },
         tooltip: {
           formatter: function() {
-            if(this.point.y === 0) return 'Did not visit ' + this.series.name;
+            var verb = 'Visited ';
+            var verb_present = 'visit '
+            if(self.url === 'http://127.0.0.1:8081/app_log') {
+              verb = 'Used ';
+              verb_present = 'use ';
+            }
+            if(this.point.y === 0) return 'Did not ' + verb_present + this.series.name;
 
             var d = moment.duration(this.point.y * 3600000, 'milliseconds');
-            var tooltipStr = 'Visited ' + this.series.name + ' for ';
+            var tooltipStr = verb + this.series.name + ' for ';
             if(d.hours()) tooltipStr += d.hours() + ' hours ';
             if(d.minutes()) tooltipStr += d.minutes() + ' minutes ';
             if(d.seconds()) tooltipStr += d.seconds() + ' seconds';

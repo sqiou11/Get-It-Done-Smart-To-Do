@@ -4,7 +4,7 @@ angular.module('Home')
 
 .controller('WebActivityDisplayController', ['$http', '$rootScope', 'ActivityDisplay', function($http, $rootScope, ActivityDisplay) {
   var self = this;
-  this.display = new ActivityDisplay($('#web-graph-container'), 'day');
+  this.display = new ActivityDisplay($('#web-graph-container'), 'day', 'web_log');
 
   this.updateGraph = function(displayParam) {
     this.display.setRange(displayParam);
@@ -23,7 +23,7 @@ angular.module('Home')
 
 .controller('AppActivityDisplayController', ['$http', '$rootScope', 'ActivityDisplay', function($http, $rootScope, ActivityDisplay) {
   var self = this;
-  this.display = new ActivityDisplay($('#app-graph-container'), 'day');
+  this.display = new ActivityDisplay($('#app-graph-container'), 'day', 'app_log');
 
   this.updateGraph = function(displayParam) {
     this.display.setRange(displayParam);

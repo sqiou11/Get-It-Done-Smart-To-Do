@@ -60,7 +60,7 @@ app.on('activate', () => {
   }
 });
 
-ipc.on('record-toggle-message', function (event, arg) {
+ipc.on('asynchronous-message', function (event, arg) {
   recordFlag = !recordFlag;
-  event.sender.send('record-toggle-reply', recordFlag);
-})
+  event.sender.send('asynchronous-reply', recordFlag);
+});
