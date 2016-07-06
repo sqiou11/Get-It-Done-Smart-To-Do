@@ -47,9 +47,7 @@ angular.module('RootController', [
     })
     .state('home.activity', {
       url: "/activity",
-      templateUrl: "modules/home/views/activity.html",
-      controller: 'ActivityDisplayController',
-      controllerAs: 'adController'
+      templateUrl: "modules/home/views/activity.html"
     })
     .state('home.productivity', {
       //url: "/list",

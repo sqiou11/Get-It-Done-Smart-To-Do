@@ -2,22 +2,40 @@
 
 angular.module('Home')
 
-.controller('ActivityDisplayController', ['$http', '$rootScope', 'ActivityDisplayService', function($http, $rootScope, ActivityDisplayService) {
-  var adController = this;
-  ActivityDisplayService.setGraphElement($('#container'));
-  ActivityDisplayService.setRange('day');
+.controller('WebActivityDisplayController', ['$http', '$rootScope', 'ActivityDisplay', function($http, $rootScope, ActivityDisplay) {
+  var self = this;
+  this.display = new ActivityDisplay($('#web-graph-container'), 'day');
 
   this.updateGraph = function(displayParam) {
-    ActivityDisplayService.setRange(displayParam);
+    this.display.setRange(displayParam);
   }
 
-  $('#datePicker').datetimepicker({
+  $('#web-datePicker').datetimepicker({
     format: 'MM/DD/YYYY',
     allowInputToggle: true
   });
-  $('#datePicker').on('dp.change', function(e) {
+  $('#web-datePicker').on('dp.change', function(e) {
     console.log(e.date);
-    ActivityDisplayService.setChosenTime(e.date);
-    ActivityDisplayService.setRange(ActivityDisplayService.getDisplayParam());
+    self.display.setChosenTime(e.date);
+    self.display.setRange(self.display.getDisplayParam());
   });
-}]);
+}])
+
+.controller('AppActivityDisplayController', ['$http', '$rootScope', 'ActivityDisplay', function($http, $rootScope, ActivityDisplay) {
+  var self = this;
+  this.display = new ActivityDisplay($('#app-graph-container'), 'day');
+
+  this.updateGraph = function(displayParam) {
+    this.display.setRange(displayParam);
+  }
+
+  $('#app-datePicker').datetimepicker({
+    format: 'MM/DD/YYYY',
+    allowInputToggle: true
+  });
+  $('#app-datePicker').on('dp.change', function(e) {
+    console.log(e.date);
+    self.display.setChosenTime(e.date);
+    self.display.setRange(self.display.getDisplayParam());
+  });
+}])
