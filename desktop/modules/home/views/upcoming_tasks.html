@@ -36,21 +36,51 @@
             <span class="glyphicon glyphicon-check" ng-show="!!task.done" ng-click="task.done=false"></span>
           </a>
         </div>
-        <div class="col-xs-4">{{task.description}}</div>
-        <div class="col-xs-4">{{task.due | date:'MM/dd hh:mma'}}</div>
-        <div class="col-xs-2">{{task.category}}</div>
-        <div class="col-xs-1">
+        <div class="col-xs-4" ng-show="!taskCtrl.editTaskFlag[task.id]">{{task.description}}</div>
+        <div class="col-xs-4" ng-show="!!taskCtrl.editTaskFlag[task.id]">
+          <input type="text" class="invis" ng-model="taskCtrl.edit.description">
+        </div>
+
+        <div class="col-xs-4" ng-show="!taskCtrl.editTaskFlag[task.id]">{{task.due | date:'MM/dd hh:mma'}}</div>
+        <div class="col-xs-4" ng-show="!!taskCtrl.editTaskFlag[task.id]">
+          <input type="text" class="invis" placeholder="Deadline" id="dueDatePicker-{{task.id}}"/>
+        </div>
+
+        <div class="col-xs-2" ng-show="!taskCtrl.editTaskFlag[task.id]">{{task.category}}</div>
+        <div class="col-xs-2" ng-show="!!taskCtrl.editTaskFlag[task.id]">
+          <div class="dropdown">
+            <a href class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-list-ul fa-fw"></i></a> {{taskCtrl.edit.category}}
+            <ul class="dropdown-menu">
+              <li ng-repeat="category in taskCtrl.categories"><a href ng-click="taskCtrl.edit.category=category.name">{{category.name}}</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-xs-1" ng-show="!taskCtrl.editTaskFlag[task.id]">
           <div class="dropdown" ng-show="taskCtrl.mousedOverTask[task.id]">
             <a href class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span class="glyphicon glyphicon-option-horizontal"></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-right">
-              <li><a href>Edit</a></li>
+              <li ng-click="taskCtrl.editTask(task, true)"><a href>Edit</a></li>
               <li role="separator" class="divider"></li>
               <li><a href ng-click="taskCtrl.deleteTask(task.id)">Delete</a></li>
             </ul>
           </div>
         </div>
+        <div class="col-xs-1" ng-show="!!taskCtrl.editTaskFlag[task.id]">
+          <div class="dropdown">
+            <a href class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-clock-o fa-fw"></i></a>  {{taskCtrl.edit.reminder}}
+            <ul class="dropdown-menu">
+              <li><a href ng-click="taskCtrl.newTask.reminder='15 minutes'">15 minutes</a></li>
+              <li><a href ng-click="taskCtrl.newTask.reminder='30 minutes'">30 minutes</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div ng-show="!!taskCtrl.editTaskFlag[task.id]">
+        <button type="button" class="btn btn-primary btn-sm" ng-click="taskCtrl.updateTask(task)">Save</button>
+        <a href ng-click="taskCtrl.editTask(task, false)">Cancel</a>
       </div>
     </li>
 
@@ -66,9 +96,7 @@
       <form ng-show="taskCtrl.isCreatingTask(key)">
         <div class="row">
           <div class="col-xs-1">
-            <a href>
-              <span class="glyphicon glyphicon-unchecked"></span>
-            </a>
+            <a href><span class="glyphicon glyphicon-unchecked"></span></a>
           </div>
           <div class="col-xs-4">
             <input type="text" name="description" id="description" class="invis" ng-model="taskCtrl.newTask.desc" placeholder="Description" required />

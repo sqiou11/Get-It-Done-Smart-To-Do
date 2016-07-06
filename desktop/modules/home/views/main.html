@@ -9,12 +9,9 @@
     <div class="panel panel-primary" ng-repeat="(key, list) in taskCtrl.sortedTasks.upcoming" ng-if="list.tasks.length > 0">
       <div class="panel-heading">
         <div class="row">
-          <div class="col-xs-7">
-            <div class="huge">{{key}}</div>
-          </div>
+          <div class="col-xs-7">{{key}}</div>
           <div class="col-xs-5 text-right">
-            <span class="badge"><div class="huge">{{list.tasks.length}}</div></span>
-            <div>{{list.date._d | date:'MMM dd'}}</div>
+            <span class="badge">{{list.tasks.length}}</span>
           </div>
         </div>
       </div>
@@ -41,3 +38,23 @@
     </div>
   </div>
 </div>
+
+<div class="row">
+  <button type="button" class="btn btn-default" id="recordAppActivityBtn">Record Desktop</button>
+  <div id="async-reply"></div>
+</div>
+
+<script>
+  const ipc = require('electron').ipcRenderer
+
+  const asyncMsgBtn = document.getElementById('recordAppActivityBtn')
+
+  asyncMsgBtn.addEventListener('click', function () {
+    ipc.send('record-toggle-message', 'ping')
+  })
+
+  ipc.on('record-toggle-reply', function (event, arg) {
+    const message = `Forked process to record desktop activity: ${arg}`
+    document.getElementById('async-reply').innerHTML = message
+  })
+</script>

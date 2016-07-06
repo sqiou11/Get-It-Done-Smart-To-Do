@@ -3,13 +3,12 @@ const electron = require('electron');
 const {app} = electron;
 // Module to create native browser window.
 const {BrowserWindow} = electron;
-const {ipcMain} = electron;
+const ipc = require('electron').ipcMain
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-let loginFlag = false;
-let user;
+let recordFlag = false;
 
 function createWindow() {
   // Create the browser window.
@@ -39,12 +38,6 @@ function createWindow() {
   });
 }
 
-app.on('login', (event, webContents, request, authInfo, callback) => {
-  event.preventDefault();
-  console.log('login event happened!');
-  //callback('username', 'secret');
-});
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -67,11 +60,7 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('synchronous-message', (event, arg) => {
-  if(arg.login == 'success') {
-    win = null;
-    loginFlag = true;
-    user = arg.user
-    createWindow();
-  }
-});
+ipc.on('record-toggle-message', function (event, arg) {
+  recordFlag = !recordFlag;
+  event.sender.send('record-toggle-reply', recordFlag);
+})

@@ -9,21 +9,21 @@ angular.module('Home')
   this.numTasks = 0;
   this.numPrevious = 0;
   this.numUpcoming = 0;
-  this.createTaskFlag = false;
   this.newTask = {};
   this.categories = [];
   this.viewMode = 'dueDate';
   this.mousedOverTask = {};
   this.createTaskFlag = {};
+  this.editTaskFlag = {};
+  this.currEditId = -1;
+  this.edit = {};
   this.archiveTasks = true;
 
   this.setCreateTask = function(key, value) {
     if(value === true) {
       for(var k in this.createTaskFlag) {
-        if(k === key)
-          this.createTaskFlag[k] = true;
-        else
-          this.createTaskFlag[k] = false;
+        if(k === key) this.createTaskFlag[k] = true;
+        else this.createTaskFlag[k] = false;
       }
       this.initForm(key);
     }
@@ -34,7 +34,6 @@ angular.module('Home')
   this.isCreatingTask = function(key) {
     if(this.createTaskFlag[key] === undefined)
       this.createTaskFlag[key] = false;
-
     return this.createTaskFlag[key] === true;
   };
 
@@ -69,6 +68,31 @@ angular.module('Home')
     });
   };
 
+  this.editTask = function(task, value) {
+    this.editTaskFlag[task.id] = value;
+    if(this.editTaskFlag[task.id] && task.id !== this.currEditId) {
+      this.editTaskFlag[this.currEditId] = false;
+      this.currEditId = task.id;
+    }
+    this.edit.id = task.id;
+    this.edit.description = task.description;
+    this.edit.due = task.due;
+    this.edit.category = task.category;
+    this.edit.reminder = task.reminder;
+    this.edit.done = task.done;
+
+    var dueDateElement = '#dueDatePicker-' + task.id;
+    $(dueDateElement).datetimepicker({
+      sideBySide: true,
+      allowInputToggle: true,
+    });
+    $(dueDateElement).on('dp.change', function(e) {
+      console.log(e.date._d);
+      taskController.edit.due = e.date._d;
+    });
+    $(dueDateElement).data("DateTimePicker").defaultDate(moment(task.due));
+  };
+
   this.getTasks = function() {
     console.log("getting tasks");
     $http.get('http://127.0.0.1:8081/tasks', {
@@ -100,15 +124,19 @@ angular.module('Home')
     });
   };
 
-  this.deleteTask = function(id) {
-    var deleteId = 0;
-    for(var i = 0; i < taskController.numTasks; i++) {
-      if(taskController.tasks[i].id == id) {
-        deleteId = taskController.tasks[i].id;
-        break;
-      }
-    }
+  this.updateTask = function(task) {
+    this.edit.id = task.id;
+    $http.put('http://127.0.0.1:8081/tasks', {
+      username: $rootScope.globals.currentUser.username,
+      data: taskController.edit
+    })
+    .success(function(response) {
+      taskController.editTask(task, false);
+      taskController.getTasks();
+    });
+  };
 
+  this.deleteTask = function(deleteId) {
     $http.delete('http://127.0.0.1:8081/tasks', {
       params: {
         username: $rootScope.globals.currentUser.username,
