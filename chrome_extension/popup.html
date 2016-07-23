@@ -1,7 +1,7 @@
 <!doctype html>
-<html>
+<html ng-app="RootController">
     <head>
-        <title>Getting Started Extension's Popup</title>
+        <title>Get It Done</title>
         <style>
             body {
                 font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
@@ -16,33 +16,27 @@
           -
           - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
          -->
-        <script src="popup.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <link rel="stylesheet" href="popup.css">
     </head>
     <body>
-        <div class="container">
-            <div id="login">
-                <h1>Login</h1>
-                <form method="post">
-                    <div class="form-group">
-                        <label for="usernameField">Username</label>
-                        <input type="username" name="username" class="form-control" id="usernameField" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="passwordField">Password</label>
-                        <input type="password" name="password" class="form-control" id="passwordField" required>
-                    </div>
-                    <button type="submit" class="btn btn-default">Submit</button>
-                </form>
-            </div>
-            <div id="body"></div>
-            <p id="status"></p>
-            <div id="logged_in">
-                <button class="btn btn-primary" id="record">Record</button>
-                <button class="btn btn-default" id="logout">Logout</button>
-            </div>
-        </div>
+      <div ui-view></div>
+
+      <script src="js/angular.min.js"></script>
+      <script src="js/angular-cookies.min.js"></script>
+      <script src="js/angular-route.min.js"></script>
+      <script src="js/angular-ui-router.js"></script>
+
+      <script src="decision-tree.js"></script>
+
+      <script src="scripts/app.js"></script>
+      <script src="modules/authentication/services.js"></script>
+      <script src="modules/authentication/controllers.js"></script>
+
+      <script src="modules/home/homeController.js"></script>
+      <script src="modules/home/ActivityDisplayController.js"></script>
+      <script src="modules/home/categoryController.js"></script>
+      <script src="modules/home/activityDisplayService.js"></script>
+
     </body>
 </html>
-

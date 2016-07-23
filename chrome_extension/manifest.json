@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
 
-    "name": "Getting started example",
+    "name": "Get It Done",
     "description": "This extension shows a Google Image search result for the current page",
     "version": "1.0",
 
@@ -16,7 +16,7 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "http://*/",
-        "https://*/"
+        "http://*/*",
+        "https://*/*"
     ]
 }

@@ -16,10 +16,27 @@ module.exports = function(app, appEnv) {
   		});
   });
 
+  router.get('/categories/upcoming', function(req, res) {
+    var params = {
+      username: req.query['username'],
+      due: req.query['due']
+    };
+  	db.any('SELECT DISTINCT category FROM tasks.' + req.query['username'] + ' WHERE due > ${due}', params)
+  		.then(function(data) {
+        console.log(data);
+  			if(data === undefined) data = {};
+  			res.send(data);
+  		})
+  		.catch(function(error) {
+  			console.log(error);
+  			res.send('error');
+  		});
+  });
+
   router.post('/', function(req, res) {
   	var table = 'tasks.' + req.body['username'];
   	db.none('CREATE TABLE IF NOT EXISTS ' + table +
-  		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, done boolean NOT NULL, CONSTRAINT ' +
+  		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, done boolean, CONSTRAINT ' +
   		req.body['username'] + '_pkey PRIMARY KEY (id))')
   		.then(function() {
   			var params = req.body['data'];

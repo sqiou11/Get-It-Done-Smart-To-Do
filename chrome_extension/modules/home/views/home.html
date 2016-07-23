@@ -1,0 +1,21 @@
+<div class="container">
+  {{user}}
+  <button class="btn" ng-click="home.toggleRecord()" ng-class="{'btn-primary': !home.recordFlag, 'btn-danger': home.recordFlag}">Record</button>
+  <button class="btn btn-default" id="logout">Logout</button>
+
+  {{categories}}
+
+  <b>Comic guy:</b>
+  <div id="testingItem"></div>
+  <br/>
+  <b>Decision Tree prediction:</b>
+  <div id="decisionTreePrediction"></div>
+  <br/>
+  <b>Random Forest prediction:</b>
+  <div id="randomForestPrediction"></div>
+  <br/>
+  <b>Decision Tree:</b>
+  <br/>
+
+  <div class="tree" id="displayTree"></div>
+</div>

@@ -87,8 +87,8 @@ angular.module('Home')
       allowInputToggle: true,
     });
     $(dueDateElement).on('dp.change', function(e) {
-      console.log(e.date._d);
-      taskController.edit.due = e.date._d;
+      console.log(e.date.valueOf());
+      taskController.edit.due = e.date.valueOf();
     });
     $(dueDateElement).data("DateTimePicker").defaultDate(moment(task.due));
   };
@@ -160,7 +160,7 @@ angular.module('Home')
         allowInputToggle: true
       });
       $(dueDateElement).on('dp.change', function(e) {
-        taskController.newTask.due = e.date._d;
+        taskController.newTask.due = e.date.valueOf();
       });
     }
 
@@ -213,7 +213,8 @@ angular.module('Home')
       var tomorrow = moment().add(1, 'days');
       var weekFromToday = moment().add(7, 'days');
       for(var i = 0; i < data.length; i++) {
-        var dueDate = moment(data[i].due);
+        var dueDate = moment(parseInt(data[i].due));
+        console.log(dueDate);
 
         if(dueDate.isBefore(today, 'day')) {
           console.log('past task');
