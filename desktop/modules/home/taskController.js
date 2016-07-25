@@ -3,7 +3,7 @@
 angular.module('Home')
 
 .controller('TaskController', ['$http', '$rootScope', '$scope', function($http, $rootScope, $scope) {
-  var taskController = this;
+  var self = this;
   this.tasks = [];
   this.sortedTasks = {};
   this.numTasks = 0;
@@ -48,10 +48,10 @@ angular.module('Home')
 
     $http.put('http://127.0.0.1:8081/tasks', {
       username: $rootScope.globals.currentUser.username,
-      data: taskController.tasks[updateId]
+      data: self.tasks[updateId]
     })
     .success(function(response) {
-      taskController.getTasks();
+      self.getTasks();
     });
   };
 
@@ -61,7 +61,7 @@ angular.module('Home')
     })
     .success(function(response) {
       if(response !== "error") {
-        taskController.categories = response;
+        self.categories = response;
       } else {
         console.log(response);
       }
@@ -88,7 +88,7 @@ angular.module('Home')
     });
     $(dueDateElement).on('dp.change', function(e) {
       console.log(e.date.valueOf());
-      taskController.edit.due = e.date.valueOf();
+      self.edit.due = e.date.valueOf();
     });
     $(dueDateElement).data("DateTimePicker").defaultDate(moment(task.due));
   };
@@ -101,13 +101,13 @@ angular.module('Home')
     .success(function(response) {
       if(response !== "error") {
         console.log(response);
-        taskController.tasks = response;
-        taskController.numTasks = response.length;
-        taskController.sort(response);
-        taskController.mousedOverTask = {};
+        self.tasks = response;
+        self.numTasks = response.length;
+        self.sort(response);
+        self.mousedOverTask = {};
         for(var i = 0; i < response.length; i++)
-          taskController.mousedOverTask[response[i].id] = false;
-        console.log(taskController.mousedOverTask);
+          self.mousedOverTask[response[i].id] = false;
+        console.log(self.mousedOverTask);
       } else {
         console.log(response);
       }
@@ -117,10 +117,10 @@ angular.module('Home')
   this.addTask = function() {
     $http.post('http://127.0.0.1:8081/tasks', {
       username: $rootScope.globals.currentUser.username,
-      data: taskController.newTask
+      data: self.newTask
     })
     .success(function(response) {
-      taskController.getTasks();
+      self.getTasks();
     });
   };
 
@@ -128,11 +128,11 @@ angular.module('Home')
     this.edit.id = task.id;
     $http.put('http://127.0.0.1:8081/tasks', {
       username: $rootScope.globals.currentUser.username,
-      data: taskController.edit
+      data: self.edit
     })
     .success(function(response) {
-      taskController.editTask(task, false);
-      taskController.getTasks();
+      self.editTask(task, false);
+      self.getTasks();
     });
   };
 
@@ -144,7 +144,7 @@ angular.module('Home')
       }
     })
     .success(function(response) {
-      taskController.getTasks();
+      self.getTasks();
     });
   };
 
@@ -160,7 +160,7 @@ angular.module('Home')
         allowInputToggle: true
       });
       $(dueDateElement).on('dp.change', function(e) {
-        taskController.newTask.due = e.date.valueOf();
+        self.newTask.due = e.date.valueOf();
       });
     }
 
@@ -293,4 +293,10 @@ angular.module('Home')
   };
 
   this.getTasks();
+  var refreshFunc = function() {
+    console.log('updating tasks display');
+    self.getTasks();
+  }
+
+  setInterval(refreshFunc, 5*60*1000);
 }]);

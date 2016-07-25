@@ -26,8 +26,6 @@ function getCurrentTabBaseUrl(callback) {
         var tab = tabs[0];
         currActiveTabId = tab.id;  // set the global active tab ID tracker
 
-        // A tab is a plain object that provides information about the tab.
-        // See https://developer.chrome.com/extensions/tabs#type-Tab
         var url = tab.url;
 
         // tab.url is only available if the "activeTab" permission is declared.
@@ -43,15 +41,6 @@ function getCurrentTabBaseUrl(callback) {
         urls[currActiveTabId] = base_url;
         callback(base_url);
     });
-
-    // Most methods of the Chrome extension APIs are asynchronous. This means that
-    // you CANNOT do something like this:
-    //
-    // var url;
-    // chrome.tabs.query(queryInfo, function(tabs) {
-    //   url = tabs[0].url;
-    // });
-    // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
 
@@ -203,4 +192,138 @@ function getBaseURL(url) {
     var protocol = pathArray[0];
     var host = pathArray[2];
     return protocol + '//' + host + '/';
+}
+
+var decisionTree, randomForest, test, decisionTreePrediction, randomForestPrediction, testId;
+var data = [
+  {categories: ['math', 'computer science'], url: 'https://www.facebook.com/', distracting: true},
+  {categories: ['computer science'], url: 'http://stackoverflow.com/', distracting: false},
+  {categories: ['math'], url: 'http://stackoverflow.com/', distracting: true},
+  {categories: ['math'], url: 'https://www.khanacademy.org/', distracting: false},
+];
+function initTree(categories, obj, callback) {
+  console.log('creating tree');
+  // Configuration
+  var config = {
+      trainingSet: data,
+      categoryAttr: 'distracting',
+      ignoredAttributes: []
+  };
+
+  // Building Decision Tree
+  decisionTree = new dt.DecisionTree(config);
+
+  // Building Random Forest
+  var numberOfTrees = 3;
+  randomForest = new dt.RandomForest(config, numberOfTrees);
+
+  // Testing Decision Tree and Random Forest
+  getCurrentTabBaseUrl(function(url) {
+    console.log('getting current url');
+    test = { categories: [] };
+    for(var i = 0; i < categories.length; i++)
+      test.categories.push(categories[i]["category"]);
+    test.url = url;
+    //console.log('predicting ' + JSON.stringify(test));
+    decisionTreePrediction = decisionTree.predict(test);
+    randomForestPrediction = randomForest.predict(test);
+    test.distracting = decisionTreePrediction == "true";
+    testId = getTestId();
+
+    updateDisplay(test, obj, callback);
+  });
+}
+
+function getTestId() {
+  for(var i = 0; i < data.length; i++) {
+    if(isEquivalent(test, data[i])) return i;
+  }
+  return -1;
+}
+
+function isEquivalent(a, b) {
+  // Create arrays of property names
+  var aProps = Object.getOwnPropertyNames(a);
+  var bProps = Object.getOwnPropertyNames(b);
+
+  // If number of properties is different,
+  // objects are not equivalent
+  if (aProps.length != bProps.length) return false;
+
+  for (var i = 0; i < aProps.length; i++) {
+    var propName = aProps[i];
+    console.log('a['+propName+'] = ' + a[propName] + ', b['+propName+'] = ' + b[propName]);
+
+    // If values of same property are not equal,
+    // objects are not equivalent
+    if (a[propName] !== b[propName] && propName !== 'distracting') return false;
+  }
+
+  return true;
+}
+
+function modifyTestCase(value) {
+  if(test.distracting === value) return;
+  console.log('modifying test case from ' + test.distracting + ' to ' + value);
+  console.log('test case index = ' + testId);
+
+  // if our current test case doesn't already exist in our training data
+  if(testId === -1) {
+    test.distracting = value;
+    data.push(test);
+    testId = data.length-1;
+    console.log(data);
+  }
+  else {
+    data[testId].distracting = value;
+    console.log(data);
+  }
+}
+
+function updateDisplay(test, obj, callback) {
+  var testingItem = obj.elements[0];
+  var randForestPrediction = obj.elements[1];
+  var displayTree = obj.elements[2];
+  //var dTreePrediction = obj.decisions;
+
+  testingItem.innerHTML = JSON.stringify(test, null, 0);
+  obj.decisions[0] = JSON.stringify(decisionTreePrediction, null, 0);
+  randForestPrediction.innerHTML = JSON.stringify(randomForestPrediction, null, 0);
+  displayTree.innerHTML = treeToHtml(decisionTree.root);
+
+  console.log('background: dTreePrediction = ' + obj.decisions[0]);
+  console.log(obj);
+  callback();
+}
+
+// Recursive (DFS) function for displaying inner structure of decision tree
+function treeToHtml(tree) {
+    // only leafs containing category
+    if (tree.category) {
+        return  ['<ul>',
+                    '<li>',
+                        '<a href="#">',
+                            '<b>', tree.category, '</b>',
+                        '</a>',
+                    '</li>',
+                 '</ul>'].join('');
+    }
+
+    return  ['<ul>',
+                '<li>',
+                    '<a href="#">',
+                        '<b>', tree.attribute, ' ', tree.predicateName, ' ', tree.pivot, ' ?</b>',
+                    '</a>',
+                    '<ul>',
+                        '<li>',
+                            '<a href="#">yes</a>',
+                            treeToHtml(tree.match),
+                        '</li>',
+                        '<li>',
+                            '<a href="#">no</a>',
+                            treeToHtml(tree.notMatch),
+                        '</li>',
+                    '</ul>',
+                '</li>',
+             '</ul>'].join('');
 }

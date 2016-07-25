@@ -3,13 +3,16 @@
   <button class="btn" ng-click="home.toggleRecord()" ng-class="{'btn-primary': !home.recordFlag, 'btn-danger': home.recordFlag}">Record</button>
   <button class="btn btn-default" id="logout">Logout</button>
 
-  {{categories}}
-
-  <b>Comic guy:</b>
+  <br/>
+  <b>Test:</b>
   <div id="testingItem"></div>
   <br/>
   <b>Decision Tree prediction:</b>
-  <div id="decisionTreePrediction"></div>
+  <div class="btn-group" role="group">
+    <button type="button" class="btn btn-default" ng-click="home.modifyTestCase(true)" ng-class="{'btn-primary': home.decision}">True</button>
+    <button type="button" class="btn btn-default" ng-click="home.modifyTestCase(false)" ng-class="{'btn-primary': !home.decision}">False</button>
+  </div>
+  <div id="callback"></div>
   <br/>
   <b>Random Forest prediction:</b>
   <div id="randomForestPrediction"></div>
