@@ -18,7 +18,6 @@ module.exports = function(app, appEnv) {
   			};
   			db.none('INSERT INTO ' + table + '(url, start_time, end_time, active) VALUES (${url}, ${start_time}, NULL, TRUE)', params)
   				.then(function(data) {
-  					console.log(data);
   					res.send('success');
   				})
   				.catch(function(error) {
@@ -56,7 +55,7 @@ module.exports = function(app, appEnv) {
   	};
   	db.many('SELECT * FROM websites.' + params['user'] + ' WHERE start_time>=${start_time} AND start_time<${end_time}', params)
   		.then(function(data) {
-  			console.log(data);
+  			//console.log(data);
   			res.send(data);
   		})
   		.catch(function(error) {

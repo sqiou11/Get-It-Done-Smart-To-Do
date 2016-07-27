@@ -4,43 +4,67 @@ var data = undefined;
 var secret = "r3jtGOeST4zPObzu3eXj";
 var access_key = "NUoucRoXtS1LfpxZkUBZ";
 
-if(localStorage.getItem('classifyCache') === undefined) {
+/*if(localStorage.getItem('classifyCache') === undefined) {
   localStorage.setItem('classifyCache', JSON.stringify({
     'http://www.webdesignerdepot.com/': ['informationtech', 'education', 'business'],
     'http://stackoverflow.com/': ['informationtech', 'messageboardsandforums'],
     'https://www.facebook.com/': ['socialnetworking'],
     'https://www.khanacademy.org/': ['education'],
   }));
-}
+}*/
+
 
 function classify(url, callback) {
   // check our cache
-  var cache = JSON.parse(localStorage.getItem('classifyCache'));
+  var cache = JSON.parse(localStorage.getItem('classifyCache')) || {};
   if(cache[url]) {
+    console.log('returning labels from cache');
     test.urltopics = cache[url];
     callback();
   }
-  else {
-    var encodedUrl = window.btoa(url);
-    var request = 'categories/v2/' + encodedUrl + '?key=' + access_key;
-    var hash = md5(secret + ':' + request);
-    var apiQuery = 'https://api.webshrinker.com/' + request + '&hash=' + hash;
-
-    test.urltopics = ['uncategorized'];
-    callback();
-    /* TEMPORARY, just to save api calls
+  else {  // consult the database
+    console.log('reading labels from database');
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() {
       if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        //console.log(response.data[0].categories);
-        test.urltopics = response.data[0].categories;
-        cache[test.url] = response.data[0].categories;
-        localStorage.setItem('classifyCache', JSON.stringify(cache));
-        callback();
+        console.log('database returned ' + xmlHttp.responseText);
+        var lookup = JSON.parse(xmlHttp.responseText);
+        if(lookup.length > 0) {
+          test.urltopics = lookup[0].categories;
+          cache[url] = lookup[0].categories; // update our cache
+          localStorage.setItem('classifyCache', JSON.stringify(cache));
+          callback();
+        }
+        else {  // if the database doesn't have it, use the api call
+          var encodedUrl = window.btoa(url);
+          var request = 'categories/v2/' + encodedUrl + '?key=' + access_key;
+          var hash = md5(secret + ':' + request);
+          var apiQuery = 'https://api.webshrinker.com/' + request + '&hash=' + hash;
+
+          // TEMPORARY, just to save api calls
+          var apiRequest = new XMLHttpRequest();
+          apiRequest.onreadystatechange = function() {
+            if (apiRequest.readyState == 4 && apiRequest.status == 200) {
+              var response = JSON.parse(apiRequest.responseText);
+              //console.log(response.data[0].categories);
+              test.urltopics = response.data[0].categories;
+              cache[url] = response.data[0].categories;
+              localStorage.setItem('classifyCache', JSON.stringify(cache));
+
+              var dbUpdate = new XMLHttpRequest();
+              dbUpdate.open("POST", 'http://127.0.0.1:8081/classify_url', true); // true for asynchronous
+              dbUpdate.setRequestHeader('Content-Type', 'application/json');
+              dbUpdate.send(JSON.stringify({ data: { url: url, categories: test.urltopics } }));
+              callback();
+            }
+          }
+          apiRequest.open("GET", apiQuery, true); // true for asynchronous
+          apiRequest.send(null);
+        }
       }
     }
-    xmlHttp.open("GET", apiQuery, true); // true for asynchronous
-    xmlHttp.send(null);*/
+    xmlHttp.open("GET", 'http://127.0.0.1:8081/classify_url?url=' + url, true); // true for asynchronous
+    xmlHttp.send(null);
   }
 }
 
@@ -79,7 +103,6 @@ function configTree() {
 function query(categories, obj, callback) {
   // Testing Decision Tree and Random Forest
   getCurrentTabBaseUrl(function(url) {
-    console.log('getting current url');
     test = { categories: [] };
     for(var i = 0; i < categories.length; i++)
       test.categories.push(categories[i]["category"]);
@@ -112,7 +135,7 @@ function isEquivalent(a, b) {
 
   for (var i = 0; i < aProps.length; i++) {
     var propName = aProps[i];
-    console.log('a['+propName+'] = ' + JSON.stringify(a[propName]) + ', b['+propName+'] = ' + JSON.stringify(b[propName]));
+    //console.log('a['+propName+'] = ' + JSON.stringify(a[propName]) + ', b['+propName+'] = ' + JSON.stringify(b[propName]));
     if(Array.isArray(a[propName]) && Array.isArray(b[propName])) {
       if(a[propName].sort().toString() !== b[propName].sort().toString()) return false;
     }
