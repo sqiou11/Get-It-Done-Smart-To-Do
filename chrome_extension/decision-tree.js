@@ -81,6 +81,24 @@ var dt = (function () {
         return counter;
     }
 
+    // return all combinations of an attribute that is an array
+    function combinations(arr) {
+        var fn = function(active, rest, all) {
+            if (active.length == 0 && rest.length == 0)
+                return;
+            if (rest.length == 0) {
+                all.push(active);
+            } else {
+                var activeCopy = active.slice();
+                activeCopy.push(rest[0]);
+                fn(activeCopy, rest.slice(1), all);
+                fn(active, rest.slice(1), all);
+            }
+            return all;
+        }
+        return fn([], arr, []);
+    }
+
     /**
      * Calculating entropy of array of objects
      * by specific attribute.
@@ -126,6 +144,7 @@ var dt = (function () {
      *                e.g. predicate(item[attr], pivot)
      */
     function split(items, attr, predicate, pivot) {
+        //console.log('split(' + JSON.stringify(items) + ', ' + attr + ', ' + predicate + ', ' + pivot + ')')
         var match = [];
         var notMatch = [];
 
@@ -179,12 +198,10 @@ var dt = (function () {
     var predicates = {
         '==': function (a, b) {
           if(Array.isArray(a) && Array.isArray(b)) {
-            if(a.length !== b.length) return false;
             a.sort();
             b.sort();
-            for(var i = 0; i < a.length; i++)
-              if(a[i] !== b[i]) return false;
-            return true;
+            //console.log(a.toString() + ' == ' + b.toString() + '?');
+            return a.toString().includes(b.toString()) || b.toString().includes(a.toString());
           }
           return a == b;
         },
@@ -218,9 +235,7 @@ var dt = (function () {
             // entropy of training set too small
             // (it means that training set is almost homogeneous),
             // so we have to terminate process of building tree
-            return {
-                category: mostFrequentValue(trainingSet, categoryAttr)
-            };
+            return { category: mostFrequentValue(trainingSet, categoryAttr) };
         }
 
         // used as hash-set for avoiding the checking of split by rules
@@ -236,57 +251,63 @@ var dt = (function () {
 
             // iterating over all attributes of item
             for (var attr in item) {
-                if ((attr == categoryAttr) || ignoredAttributes[attr]) {
-                    continue;
-                }
+                if ((attr == categoryAttr) || ignoredAttributes[attr]) continue;
 
-                // let the value of current attribute be the pivot
-                var pivot = item[attr];
+                var attrCombos = [];
+                if(Array.isArray(item[attr]))
+                  attrCombos = combinations(item[attr]);
+                else
+                  attrCombos.push(item[attr]);
 
-                // pick the predicate
-                // depending on the type of the attribute value
-                var predicateName;
-                if (typeof pivot == 'number') {
-                    predicateName = '>=';
-                } else {
-                    // there is no sense to compare non-numeric attributes
-                    // so we will check only equality of such attributes
-                    predicateName = '==';
-                }
+                for(var j = 0; j < attrCombos.length; j++) {
+                  // let the value of current attribute be the pivot
+                  var pivot = attrCombos[j];
 
-                var attrPredPivot = attr + predicateName + pivot;
-                if (alreadyChecked[attrPredPivot]) {
-                    // skip such pairs of 'attribute-predicate-pivot',
-                    // which been already checked
-                    continue;
-                }
-                alreadyChecked[attrPredPivot] = true;
+                  // pick the predicate
+                  // depending on the type of the attribute value
+                  var predicateName;
+                  if (typeof pivot == 'number') {
+                      predicateName = '>=';
+                  } else {
+                      // there is no sense to compare non-numeric attributes
+                      // so we will check only equality of such attributes
+                      predicateName = '==';
+                  }
 
-                var predicate = predicates[predicateName];
+                  var attrPredPivot = attr + predicateName + pivot;
+                  if (alreadyChecked[attrPredPivot]) {
+                      // skip such pairs of 'attribute-predicate-pivot',
+                      // which been already checked
+                      continue;
+                  }
+                  alreadyChecked[attrPredPivot] = true;
 
-                // splitting training set by given 'attribute-predicate-value'
-                var currSplit = split(trainingSet, attr, predicate, pivot);
+                  var predicate = predicates[predicateName];
 
-                // calculating entropy of subsets
-                var matchEntropy = entropy(currSplit.match, categoryAttr);
-                var notMatchEntropy = entropy(currSplit.notMatch, categoryAttr);
+                  // splitting training set by given 'attribute-predicate-value'
+                  var currSplit = split(trainingSet, attr, predicate, pivot);
 
-                // calculating informational gain
-                var newEntropy = 0;
-                newEntropy += matchEntropy * currSplit.match.length;
-                newEntropy += notMatchEntropy * currSplit.notMatch.length;
-                newEntropy /= trainingSet.length;
-                var currGain = initialEntropy - newEntropy;
+                  // calculating entropy of subsets
+                  var matchEntropy = entropy(currSplit.match, categoryAttr);
+                  var notMatchEntropy = entropy(currSplit.notMatch, categoryAttr);
 
-                if (currGain > bestSplit.gain) {
-                    // remember pairs 'attribute-predicate-value'
-                    // which provides informational gain
-                    bestSplit = currSplit;
-                    bestSplit.predicateName = predicateName;
-                    bestSplit.predicate = predicate;
-                    bestSplit.attribute = attr;
-                    bestSplit.pivot = pivot;
-                    bestSplit.gain = currGain;
+                  // calculating informational gain
+                  var newEntropy = 0;
+                  newEntropy += matchEntropy * currSplit.match.length;
+                  newEntropy += notMatchEntropy * currSplit.notMatch.length;
+                  newEntropy /= trainingSet.length;
+                  var currGain = initialEntropy - newEntropy;
+
+                  if (currGain > bestSplit.gain) {
+                      // remember pairs 'attribute-predicate-value'
+                      // which provides informational gain
+                      bestSplit = currSplit;
+                      bestSplit.predicateName = predicateName;
+                      bestSplit.predicate = predicate;
+                      bestSplit.attribute = attr;
+                      bestSplit.pivot = pivot;
+                      bestSplit.gain = currGain;
+                  }
                 }
             }
         }
@@ -297,7 +318,6 @@ var dt = (function () {
         }
 
         // building subtrees
-
         builder.maxTreeDepth = maxTreeDepth - 1;
 
         builder.trainingSet = bestSplit.match;

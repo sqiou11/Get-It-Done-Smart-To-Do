@@ -26,7 +26,7 @@ angular.module('Home')
                       document.getElementById('displayTree')],
                   decisions: []
                 };
-      bgPage.initTree(data, obj, function() {
+      bgPage.query(data, obj, function() {
         // changes made in this callback aren't registered by angularjs
         // so we need to explicitly call the $scope.$apply() function
         $scope.$apply(function() {
@@ -51,7 +51,7 @@ angular.module('Home')
                       document.getElementById('displayTree')],
                   decisions: []
                 };
-      bgPage.initTree(self.categories, obj, function() {
+      bgPage.query(self.categories, obj, function() {
         // changes made in this callback aren't registered by angularjs
         // so we need to explicitly call the $scope.$apply() function
         $scope.$apply(function() {

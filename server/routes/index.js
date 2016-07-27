@@ -6,4 +6,5 @@ module.exports = function (app, appEnv) {
     require('./web_log')(app, appEnv);
     require('./web_preference')(app, appEnv);
     require('./app_log')(app, appEnv);
+    require('./training_data')(app, appEnv);
 };
