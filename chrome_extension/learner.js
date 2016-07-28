@@ -5,14 +5,22 @@ var upcomingTaskCategories = undefined;
 var secret = "r3jtGOeST4zPObzu3eXj";
 var access_key = "NUoucRoXtS1LfpxZkUBZ";
 
-/*if(localStorage.getItem('classifyCache') === undefined) {
-  localStorage.setItem('classifyCache', JSON.stringify({
-    'http://www.webdesignerdepot.com/': ['informationtech', 'education', 'business'],
-    'http://stackoverflow.com/': ['informationtech', 'messageboardsandforums'],
-    'https://www.facebook.com/': ['socialnetworking'],
-    'https://www.khanacademy.org/': ['education'],
-  }));
-}*/
+function initTree() {
+  console.log('creating tree');
+  // Configuration
+  if(data === undefined) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+        data = JSON.parse(xmlHttp.responseText);
+        configTree();
+      }
+    }
+    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + window.sessionStorage.getItem('token'), true); // true for asynchronous
+    xmlHttp.send(null);
+  }
+  else configTree();
+}
 
 function classify(url, callback) {
   // check our cache
@@ -42,7 +50,10 @@ function classify(url, callback) {
           var hash = md5(secret + ':' + request);
           var apiQuery = 'https://api.webshrinker.com/' + request + '&hash=' + hash;
 
-          // TEMPORARY, just to save api calls
+          test.urltopics = ['categories'];
+          callback();
+
+          /* TEMPORARY, just to save api calls
           var apiRequest = new XMLHttpRequest();
           apiRequest.onreadystatechange = function() {
             if (apiRequest.readyState == 4 && apiRequest.status == 200) {
@@ -61,30 +72,13 @@ function classify(url, callback) {
             }
           }
           apiRequest.open("GET", apiQuery, true); // true for asynchronous
-          apiRequest.send(null);
+          apiRequest.send(null); */
         }
       }
     }
     xmlHttp.open("GET", 'http://127.0.0.1:8081/classify_url?url=' + url, true); // true for asynchronous
     xmlHttp.send(null);
   }
-}
-
-function initTree() {
-  console.log('creating tree');
-  // Configuration
-  if(data === undefined) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() {
-      if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        data = JSON.parse(xmlHttp.responseText);
-        configTree();
-      }
-    }
-    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + window.sessionStorage.getItem('token'), true); // true for asynchronous
-    xmlHttp.send(null);
-  }
-  else configTree();
 }
 
 function configTree() {
@@ -102,7 +96,7 @@ function configTree() {
   randomForest = new dt.RandomForest(config, numberOfTrees);
 }
 
-function query(url, callback) {
+function query(url) {
   // get upcoming task categories
   var upcomingCategoriesRequestUrl = 'http://127.0.0.1:8081/tasks/categories/upcoming';
   upcomingCategoriesRequestUrl += '?username=' + getSession() + '&due=' + Date.now();
@@ -123,7 +117,7 @@ function query(url, callback) {
         testId = getTestId();
         set_web_log_distracting(test.distracting);
 
-        if(callback) callback();
+        updateDisplay();
       });
     }
   }
@@ -158,7 +152,7 @@ function isEquivalent(a, b) {
   return true;
 }
 
-function modifyTestCase(value, callback) {
+function modifyTestCase(value) {
   if(test.distracting === value) return;
   console.log('modifying test case from ' + test.distracting + ' to ' + value);
   console.log('test case index = ' + testId);
@@ -202,21 +196,30 @@ function modifyTestCase(value, callback) {
   }
 
   initTree();
-  query(getBaseURL(urls[currActiveTabId]), callback);
+  query(getBaseURL(urls[currActiveTabId]));
 }
 
-function updateDisplay(obj, callback) {
-  var testingItem = obj.elements[0];
-  var randForestPrediction = obj.elements[1];
-  var displayTree = obj.elements[2];
-  //var dTreePrediction = obj.decisions;
+function updateDisplay() {
+  console.log('updating display');
+  var views = chrome.extension.getViews();
+  var testingItem, home, randForestPrediction, displayTree;
+  for(var i = 0; i < views.length; i++) {
+    if(views[i].location.pathname === "/popup.html") {
+      testingItem = views[i].getPopupElement('testingItem');
+      home = views[i].getPopupElement('home');
+      randForestPrediction = views[i].getPopupElement('randomForestPrediction');
+      displayTree = views[i].getPopupElement('displayTree');
 
-  testingItem.innerHTML = JSON.stringify(test, null, 0);
-  obj.decisions[0] = JSON.stringify(decisionTreePrediction, null, 0);
-  randForestPrediction.innerHTML = JSON.stringify(randomForestPrediction, null, 0);
-  displayTree.innerHTML = treeToHtml(decisionTree.root);
+      testingItem.innerHTML = JSON.stringify(test, null, 0);
+      randForestPrediction.innerHTML = JSON.stringify(randomForestPrediction, null, 0);
+      displayTree.innerHTML = treeToHtml(decisionTree.root);
 
-  callback();
+      var scope = views[i].angular.element(home).scope();
+      scope.$apply(function() {
+        scope.decision = JSON.stringify(decisionTreePrediction, null, 0) == "\"true\"";
+      })
+    }
+  }
 }
 
 // Recursive (DFS) function for displaying inner structure of decision tree

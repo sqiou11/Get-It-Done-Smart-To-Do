@@ -166,6 +166,10 @@ function startSession(token) {
     console.log('session created with token = ' + token);
 
     initTree();
+
+    getCurrentTabBaseUrl(function(url) {
+      if(url.substring(0, 9) !== "chrome://") query(url);
+    });
 }
 
 function endSession() {
