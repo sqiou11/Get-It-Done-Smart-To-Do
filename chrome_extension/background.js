@@ -2,7 +2,6 @@
 var urls = [];
 var currActiveTabId = -1;
 var recordFlag = false;
-
 /**
  * Get the current URL.
  *
@@ -18,6 +17,7 @@ function getCurrentTabBaseUrl(callback) {
     };
 
     chrome.tabs.query(queryInfo, function(tabs) {
+        console.log(tabs);
         // chrome.tabs.query invokes the callback with a list of tabs that match the
         // query. When the popup is opened, there is certainly a window and at least
         // one tab, so we can safely assume that |tabs| is a non-empty array.
@@ -39,9 +39,12 @@ function getCurrentTabBaseUrl(callback) {
         var base_url = protocol + '//' + host + '/';
 
         urls[currActiveTabId] = base_url;
+
         callback(base_url);
     });
 }
+
+//getCurrentTabBaseUrl(function(url) {});
 
 
 // execute function when tab gets updated (specifically when url changes)
@@ -54,11 +57,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
     //var currDate = new Date();
     var timestamp = Date.now();
-
+    var currentBaseUrl = getBaseURL(urls[tabId]);
+    var prevBaseUrl = getBaseURL(prevURL);
     // if the old and new URLs have different bases and we're recording, then log the change
-    if(recordFlag && getBaseURL(urls[tabId]) != getBaseURL(prevURL)) {
-      start_web_log(getSession(), getBaseURL(urls[tabId]), timestamp);
-      end_web_log(getSession(), getBaseURL(prevURL), timestamp);
+    if(currentBaseUrl != prevBaseUrl) {
+      if(getSession() && currentBaseUrl.substring(0, 9) !== "chrome://") query(currentBaseUrl);
+      if(recordFlag) {
+        start_web_log(getSession(), currentBaseUrl, timestamp);
+        end_web_log(getSession(), prevBaseUrl, timestamp);
+      }
     }
   }
 });
@@ -72,12 +79,17 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
     //var currDate = new Date();
     var timestamp = Date.now();
-    if(recordFlag && getBaseURL(tab.url) != getBaseURL(urls[prevActiveTabId])) {
-      console.log("changed active tab: to " + getBaseURL(tab.url) + " from " + getBaseURL(urls[prevActiveTabId]));
-      // start logging the new active tab's URL
-      start_web_log(getSession(), getBaseURL(tab.url), timestamp);
-      if(prevActiveTabId > -1)    // if there was a previous active tab, end the logging for that one
-        end_web_log(getSession(), getBaseURL(urls[prevActiveTabId]), timestamp);
+    var currentBaseUrl = getBaseURL(tab.url);
+    var prevBaseUrl = getBaseURL(urls[prevActiveTabId] || '');
+    if(currentBaseUrl != prevBaseUrl) {
+      if(getSession() && currentBaseUrl.substring(0, 9) !== "chrome://") query(currentBaseUrl);
+      if(recordFlag) {
+        console.log("changed active tab: to " + currentBaseUrl + " from " + getBaseURL(urls[prevActiveTabId]));
+        // start logging the new active tab's URL
+        start_web_log(getSession(), currentBaseUrl, timestamp);
+        if(prevActiveTabId > -1)    // if there was a previous active tab, end the logging for that one
+          end_web_log(getSession(), prevBaseUrl, timestamp);
+      }
     }
   });
 });
@@ -119,14 +131,14 @@ function end_web_log(username, url, end_time) {
 
   // Set up an asynchronous AJAX POST request
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://127.0.0.1:8081/web_log/end', true);
+  xhr.open('PUT', 'http://127.0.0.1:8081/web_log/end', true);
 
   var body = 'username=' + username +
               '&url=' + url +
               '&end_time=' + encodeURIComponent(end_time);
   body = body.replace(/%20/g, '+');
 
-  console.log(body);
+  //console.log(body);
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
   // Handle request state change events
@@ -139,9 +151,21 @@ function end_web_log(username, url, end_time) {
   xhr.send(body);
 }
 
+function set_web_log_distracting(distracting) {
+  if(!recordFlag) return;
+
+  var xhr = new XMLHttpRequest();
+  var data = { username: getSession(), data: { distracting: distracting } };
+  xhr.open('PUT', 'http://127.0.0.1:8081/web_log/distracting', true);
+  xhr.setRequestHeader('Content-type', 'application/json');
+  xhr.send(JSON.stringify(data));
+}
+
 function startSession(token) {
     window.sessionStorage.setItem('token', token);
     console.log('session created with token = ' + token);
+
+    initTree();
 }
 
 function endSession() {
@@ -183,9 +207,7 @@ function toggleRecord() {
     recordFlag = !recordFlag;
 }
 
-function getRecordFlag() {
-    return recordFlag;
-}
+function getRecordFlag() { return recordFlag; }
 
 function getBaseURL(url) {
     var pathArray = url.split( '/' );

@@ -30,14 +30,27 @@ module.exports = function(app, appEnv) {
   });
 
   // handle requests to end the log entry of a URL (add end time and change active from 'yes' to 'no')
-  router.post('/end', function(req, res) {
-  	console.log('received POST request to end log for ' + req.body.url);
+  router.put('/end', function(req, res) {
+  	console.log('received PUT request to end log for ' + req.body.url);
   	var table = 'websites.' + req.body['username'];
   	var params = {
   		url: req.body['url'],
   		end_time: req.body['end_time']
   	};
   	db.none('UPDATE ' + table + ' SET end_time=${end_time}, active=FALSE WHERE url=${url} AND active=TRUE', params)
+  		.then(function() {
+  			res.send('success');
+  		})
+  		.catch(function(error) {
+  			console.log(error);
+  		});
+  });
+
+  router.put('/distracting', function(req, res) {
+  	console.log('received PUT request to set distracting field');
+  	var table = 'websites.' + req.body['username'];
+  	var params = req.body['data'];
+  	db.none('UPDATE ' + table + ' SET distracting=${distracting} WHERE active=TRUE', params)
   		.then(function() {
   			res.send('success');
   		})

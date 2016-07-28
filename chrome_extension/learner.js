@@ -1,5 +1,6 @@
 var decisionTree, randomForest, test, decisionTreePrediction, randomForestPrediction, testId;
 var data = undefined;
+var upcomingTaskCategories = undefined;
 
 var secret = "r3jtGOeST4zPObzu3eXj";
 var access_key = "NUoucRoXtS1LfpxZkUBZ";
@@ -12,7 +13,6 @@ var access_key = "NUoucRoXtS1LfpxZkUBZ";
     'https://www.khanacademy.org/': ['education'],
   }));
 }*/
-
 
 function classify(url, callback) {
   // check our cache
@@ -36,6 +36,7 @@ function classify(url, callback) {
           callback();
         }
         else {  // if the database doesn't have it, use the api call
+          console.log('making api call for url ' + url);
           var encodedUrl = window.btoa(url);
           var request = 'categories/v2/' + encodedUrl + '?key=' + access_key;
           var hash = md5(secret + ':' + request);
@@ -45,6 +46,7 @@ function classify(url, callback) {
           var apiRequest = new XMLHttpRequest();
           apiRequest.onreadystatechange = function() {
             if (apiRequest.readyState == 4 && apiRequest.status == 200) {
+              console.log('api response = ' + apiRequest.responseText);
               var response = JSON.parse(apiRequest.responseText);
               //console.log(response.data[0].categories);
               test.urltopics = response.data[0].categories;
@@ -100,22 +102,33 @@ function configTree() {
   randomForest = new dt.RandomForest(config, numberOfTrees);
 }
 
-function query(categories, obj, callback) {
-  // Testing Decision Tree and Random Forest
-  getCurrentTabBaseUrl(function(url) {
-    test = { categories: [] };
-    for(var i = 0; i < categories.length; i++)
-      test.categories.push(categories[i]["category"]);
-    //console.log('predicting ' + JSON.stringify(test));
-    classify(url, function() {
-      decisionTreePrediction = decisionTree.predict(test);
-      randomForestPrediction = randomForest.predict(test);
-      test.distracting = decisionTreePrediction == "true";
-      testId = getTestId();
+function query(url, callback) {
+  // get upcoming task categories
+  var upcomingCategoriesRequestUrl = 'http://127.0.0.1:8081/tasks/categories/upcoming';
+  upcomingCategoriesRequestUrl += '?username=' + getSession() + '&due=' + Date.now();
 
-      updateDisplay(test, obj, callback);
-    });
-  });
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() {
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+      upcomingTaskCategories = JSON.parse(xmlHttp.responseText);
+      // Testing Decision Tree and Random Forest
+      test = { categories: [] };
+      for(var i = 0; i < upcomingTaskCategories.length; i++)
+        test.categories.push(upcomingTaskCategories[i]["category"]);
+      //console.log('predicting ' + JSON.stringify(test));
+      classify(url, function() {
+        decisionTreePrediction = decisionTree.predict(test);
+        randomForestPrediction = randomForest.predict(test);
+        test.distracting = decisionTreePrediction == "true";
+        testId = getTestId();
+        set_web_log_distracting(test.distracting);
+
+        if(callback) callback();
+      });
+    }
+  }
+  xmlHttp.open("GET", upcomingCategoriesRequestUrl , true); // true for asynchronous
+  xmlHttp.send(null);
 }
 
 function getTestId() {
@@ -145,12 +158,12 @@ function isEquivalent(a, b) {
   return true;
 }
 
-function modifyTestCase(value) {
+function modifyTestCase(value, callback) {
   if(test.distracting === value) return;
   console.log('modifying test case from ' + test.distracting + ' to ' + value);
   console.log('test case index = ' + testId);
 
-  var postData = { username: window.sessionStorage.getItem('token') };
+  var postData = { username: getSession() };
   // if our current test case doesn't already exist in our training data
   if(testId === -1) {
     test.distracting = value;
@@ -189,9 +202,10 @@ function modifyTestCase(value) {
   }
 
   initTree();
+  query(getBaseURL(urls[currActiveTabId]), callback);
 }
 
-function updateDisplay(test, obj, callback) {
+function updateDisplay(obj, callback) {
   var testingItem = obj.elements[0];
   var randForestPrediction = obj.elements[1];
   var displayTree = obj.elements[2];
@@ -202,7 +216,6 @@ function updateDisplay(test, obj, callback) {
   randForestPrediction.innerHTML = JSON.stringify(randomForestPrediction, null, 0);
   displayTree.innerHTML = treeToHtml(decisionTree.root);
 
-  console.log('background: dTreePrediction = ' + obj.decisions[0]);
   callback();
 }
 
@@ -237,5 +250,3 @@ function treeToHtml(tree) {
                 '</li>',
              '</ul>'].join('');
 }
-
-initTree();
