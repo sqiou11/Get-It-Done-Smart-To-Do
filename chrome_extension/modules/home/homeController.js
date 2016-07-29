@@ -1,14 +1,24 @@
 ﻿'use strict';
 
-angular.module('Home')
+angular.module('app')
 
-.controller('HomeController', ['$scope', '$rootScope', '$http', function ($scope, $rootScope, $http) {
+.controller('HomeController', ['$scope', 'auth', 'store', '$location', function ($scope, auth, store, $location) {
   var self = this;
   this.recordFlag = false;
   this.categories = [];
   $scope.decision;
+  $scope.auth = auth;
 
-  $scope.user = $rootScope.globals.currentUser.username;
+  $scope.user = store.get('name');
+
+  $scope.logout = function() {
+    console.log('logging out');
+    store.remove('profile');
+    store.remove('token');
+    store.remove('name');
+    auth.signout();
+    $location.url('/login');
+  }
 
   chrome.runtime.getBackgroundPage(function(bgPage) {
     bgPage.updateDisplay();

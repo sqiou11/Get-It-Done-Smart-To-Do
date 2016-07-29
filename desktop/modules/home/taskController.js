@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('Home')
+angular.module('app')
 
-.controller('TaskController', ['$http', '$rootScope', '$scope', function($http, $rootScope, $scope) {
+.controller('TaskController', ['$http', '$scope', 'store', function($http, $scope, store) {
   var self = this;
   this.tasks = [];
   this.sortedTasks = {};
@@ -47,7 +47,7 @@ angular.module('Home')
     }
 
     $http.put('http://127.0.0.1:8081/tasks', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('name'),
       data: self.tasks[updateId]
     })
     .success(function(response) {
@@ -57,7 +57,7 @@ angular.module('Home')
 
   this.getCategories = function() {
     $http.get('http://127.0.0.1:8081/categories', {
-      params: { username: $rootScope.globals.currentUser.username }
+      params: { username: store.get('name') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -96,7 +96,7 @@ angular.module('Home')
   this.getTasks = function() {
     console.log("getting tasks");
     $http.get('http://127.0.0.1:8081/tasks', {
-      params: { username: $rootScope.globals.currentUser.username }
+      params: { username: store.get('name') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -116,7 +116,7 @@ angular.module('Home')
 
   this.addTask = function() {
     $http.post('http://127.0.0.1:8081/tasks', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('name'),
       data: self.newTask
     })
     .success(function(response) {
@@ -127,7 +127,7 @@ angular.module('Home')
   this.updateTask = function(task) {
     this.edit.id = task.id;
     $http.put('http://127.0.0.1:8081/tasks', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('name'),
       data: self.edit
     })
     .success(function(response) {
@@ -139,7 +139,7 @@ angular.module('Home')
   this.deleteTask = function(deleteId) {
     $http.delete('http://127.0.0.1:8081/tasks', {
       params: {
-        username: $rootScope.globals.currentUser.username,
+        username: store.get('name'),
         id: deleteId
       }
     })

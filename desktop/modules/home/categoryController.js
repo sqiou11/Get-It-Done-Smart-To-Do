@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('Home')
+angular.module('app')
 
-.controller('CategoryController', ['$http', '$rootScope', function($http, $rootScope) {
+.controller('CategoryController', ['$http', 'store', function($http, store) {
   var catController = this;
   this.categories = [];
   this.newCategory = { name: '', monitor: false };
@@ -33,7 +33,7 @@ angular.module('Home')
     }
 
     $http.post('http://127.0.0.1:8081/categories', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('name'),
       data: catController.newCategory
     })
     .success(function(response) {
@@ -48,7 +48,7 @@ angular.module('Home')
     this.edit.id = this.categories[index].id; // grab the table ID of the category that was modified
 
     $http.put('http://127.0.0.1:8081/categories', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('name'),
       data: catController.edit
     })
     .success(function(response) {
@@ -60,7 +60,7 @@ angular.module('Home')
   this.getCategories = function() {
     console.log("getCategories()");
     $http.get('http://127.0.0.1:8081/categories', {
-      params: { username: $rootScope.globals.currentUser.username }
+      params: { username: store.get('name') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -75,7 +75,7 @@ angular.module('Home')
   this.deleteCategory = function(deleteId) {
     $http.delete('http://127.0.0.1:8081/categories', {
       params: {
-        username: $rootScope.globals.currentUser.username,
+        username: store.get('name'),
         id: deleteId
       }
     })

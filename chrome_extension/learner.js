@@ -16,7 +16,7 @@ function initTree() {
         configTree();
       }
     }
-    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + window.sessionStorage.getItem('token'), true); // true for asynchronous
+    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + localStorage.getItem('name'), true); // true for asynchronous
     xmlHttp.send(null);
   }
   else configTree();
@@ -50,7 +50,7 @@ function classify(url, callback) {
           var hash = md5(secret + ':' + request);
           var apiQuery = 'https://api.webshrinker.com/' + request + '&hash=' + hash;
 
-          test.urltopics = ['categories'];
+          test.urltopics = ['uncategorized'];
           callback();
 
           /* TEMPORARY, just to save api calls
@@ -115,7 +115,7 @@ function query(url) {
         randomForestPrediction = randomForest.predict(test);
         test.distracting = decisionTreePrediction == "true";
         testId = getTestId();
-        set_web_log_distracting(test.distracting);
+        if(recordFlag) set_web_log_distracting(test.distracting);
 
         updateDisplay();
       });

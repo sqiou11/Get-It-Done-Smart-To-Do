@@ -1,7 +1,7 @@
 <div class="container" id="home">
   {{user}}
   <button class="btn" ng-click="home.toggleRecord()" ng-class="{'btn-primary': !home.recordFlag, 'btn-danger': home.recordFlag}">Record</button>
-  <button class="btn btn-default" id="logout">Logout</button>
+  <button class="btn btn-default" ng-click="logout()">Logout</button>
 
   <br/>
   <b>Test:</b>

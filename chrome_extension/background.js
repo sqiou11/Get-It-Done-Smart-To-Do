@@ -161,12 +161,9 @@ function set_web_log_distracting(distracting) {
   xhr.send(JSON.stringify(data));
 }
 
-function startSession(token) {
-    window.sessionStorage.setItem('token', token);
-    console.log('session created with token = ' + token);
-
+function startSession() {
+    console.log('starting session');
     initTree();
-
     getCurrentTabBaseUrl(function(url) {
       if(url.substring(0, 9) !== "chrome://") query(url);
     });
@@ -191,7 +188,7 @@ function endSession() {
 
 function getSession() {
   console.log('session token requested');
-  return window.sessionStorage.getItem('token');
+  return localStorage.getItem('name');
 }
 
 function toggleRecord() {

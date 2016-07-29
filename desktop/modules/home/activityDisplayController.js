@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('Home')
+angular.module('app')
 
 // filter used to convert duration in milliseconds to hour-min-seconds
 .filter('durationFormat', function() {

@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('Home')
+angular.module('app')
 
-.factory('ActivityDisplay', function($http, $rootScope) {
+.factory('ActivityDisplay', function($http, store) {
   var chartParams = {};
   var displayParam = '';
   var preferences = [];
@@ -80,7 +80,7 @@ angular.module('Home')
     this.getWebPreferences = function(callback) {
       var self = this;
       $http.get('http://127.0.0.1:8081/web_preferences', {
-        params: { username: $rootScope.globals.currentUser.username }
+        params: { username: store.get('name') }
       })
       .success(function(response) {
         if(response !== "error") {
@@ -144,7 +144,7 @@ angular.module('Home')
 
       $http.get(self.url, {
         params: {
-          username: $rootScope.globals.currentUser.username,
+          username: store.get('name'),
           start_time: start.valueOf(),
           end_time: oneDayLater.valueOf()
         }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-app="RootController">
+<html ng-app="app">
     <head>
         <title>Get It Done</title>
         <style>
@@ -18,23 +18,28 @@
          -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
         <link rel="stylesheet" href="popup.css">
+
+        <script src="js/lock.min.js"></script>
+        <script src="js/auth0-7.0.3.min.js"></script>
+        <script src="js/angular.min.js"></script>
+        <script src="js/angular-cookies.min.js"></script>
+        <script src="js/angular-route.min.js"></script>
+        <script src="js/auth0-angular.min.js"></script>
+        <script src="js/angular-storage.min.js"></script>
+        <script src="js/angular-jwt.min.js"></script>
+        <script src="js/angular-ui-router.js"></script>
+
+        <script src="scripts/app.js"></script>
+        <script src="modules/login/login.js"></script>
+
+        <script src="modules/home/homeController.js"></script>
     </head>
     <body>
       <div ui-view></div>
 
-      <script src="js/angular.min.js"></script>
-      <script src="js/angular-cookies.min.js"></script>
-      <script src="js/angular-route.min.js"></script>
-      <script src="js/angular-ui-router.js"></script>
-
-      <script src="scripts/app.js"></script>
-      <script src="modules/authentication/services.js"></script>
-      <script src="modules/authentication/controllers.js"></script>
-
-      <script src="modules/home/homeController.js"></script>
-      <script src="modules/home/ActivityDisplayController.js"></script>
+      <!--<script src="modules/home/ActivityDisplayController.js"></script>
       <script src="modules/home/categoryController.js"></script>
-      <script src="modules/home/activityDisplayService.js"></script>
+      <script src="modules/home/activityDisplayService.js"></script>-->
 
     </body>
 </html>
