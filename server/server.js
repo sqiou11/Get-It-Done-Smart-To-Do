@@ -70,8 +70,8 @@ var auth = function(req, res, next) {
 };
 
 // all web application functions
-app.get('/', auth, function(req, res) {
-	//res.render('index.html');
+app.get('/', function(req, res) {
+	res.render('index.html');
 });
 
 app.post('/login', function(req, res) {
