@@ -5,12 +5,11 @@ module.exports = function(app, appEnv) {
   var db = appEnv.db;
 
   router.get('/', function(req, res) {
-  	var table = 'categories.' + req.query['username'];
-  	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+  	db.none('CREATE TABLE IF NOT EXISTS categories.\"' + req.query['username'] + '\"' +
   		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
   		req.query['username'] + '_pkey PRIMARY KEY (id))')
   		.then(function() {
-  			db.any('SELECT * FROM categories.' + req.query['username'])
+  			db.any('SELECT * FROM categories.\"' + req.query['username'] + '\"')
   				.then(function(data) {
   					res.send(data);
   				})
@@ -25,14 +24,12 @@ module.exports = function(app, appEnv) {
   });
 
   router.post('/', function(req, res) {
-  	console.log(req.body['username']);
-  	var table = 'categories.' + req.body['username'];
-  	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+  	db.none('CREATE TABLE IF NOT EXISTS categories.\"' + req.body['username'] + '\"' +
   		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
   		req.body['username'] + '_pkey PRIMARY KEY (id))')
   		.then(function() {
 				var params = req.body['data'];
-				db.none('INSERT INTO ' + table + '(name,monitor) VALUES (${name},${monitor})', params)
+				db.none('INSERT INTO categories.\"' + req.body['username'] + '\"(name,monitor) VALUES (${name},${monitor})', params)
 					.then(function() {
 						res.send('success');
 					})
@@ -48,9 +45,8 @@ module.exports = function(app, appEnv) {
   });
 
   router.put('/', function(req, res) {
-    var table = 'categories.' + req.body['username'];
 		var params = req.body['data'];
-		db.none('UPDATE ' + table + ' SET name=${name},monitor=${monitor} WHERE id=${id}', params)
+		db.none('UPDATE categories.\"' + req.body['username'] + '\" SET name=${name},monitor=${monitor} WHERE id=${id}', params)
 			.then(function() {
 				res.send('success');
 			})
@@ -61,9 +57,8 @@ module.exports = function(app, appEnv) {
   });
 
   router.delete('/', function(req, res) {
-    var table = 'categories.' + req.query['username'];
 		var params = req.query;
-		db.none('DELETE FROM ' + table + ' WHERE id=${id}', params)
+		db.none('DELETE FROM categories.\"' + req.query['username'] + '\" WHERE id=${id}', params)
 			.then(function() {
 				res.send('success');
 			})

@@ -47,7 +47,7 @@ angular.module('app')
     }
 
     $http.put('http://127.0.0.1:8081/tasks', {
-      username: store.get('name'),
+      username: store.get('id'),
       data: self.tasks[updateId]
     })
     .success(function(response) {
@@ -57,7 +57,7 @@ angular.module('app')
 
   this.getCategories = function() {
     $http.get('http://127.0.0.1:8081/categories', {
-      params: { username: store.get('name') }
+      params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -96,7 +96,7 @@ angular.module('app')
   this.getTasks = function() {
     console.log("getting tasks");
     $http.get('http://127.0.0.1:8081/tasks', {
-      params: { username: store.get('name') }
+      params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -116,7 +116,7 @@ angular.module('app')
 
   this.addTask = function() {
     $http.post('http://127.0.0.1:8081/tasks', {
-      username: store.get('name'),
+      username: store.get('id'),
       data: self.newTask
     })
     .success(function(response) {
@@ -127,7 +127,7 @@ angular.module('app')
   this.updateTask = function(task) {
     this.edit.id = task.id;
     $http.put('http://127.0.0.1:8081/tasks', {
-      username: store.get('name'),
+      username: store.get('id'),
       data: self.edit
     })
     .success(function(response) {
@@ -139,7 +139,7 @@ angular.module('app')
   this.deleteTask = function(deleteId) {
     $http.delete('http://127.0.0.1:8081/tasks', {
       params: {
-        username: store.get('name'),
+        username: store.get('id'),
         id: deleteId
       }
     })

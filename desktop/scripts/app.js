@@ -77,14 +77,14 @@ angular.module('app', [
       store.set('profile', profile);
       store.set('token', idToken);
       store.set('name', profile.nickname);
-      $location.url('/');
+      $location.path('/');
     });
   }]);
 
   //Called when login fails
   authProvider.on('loginFailure', function() {
     // If anything goes wrong
-    $location.url('/login');
+    $location.path('/login');
   });*/
 }])
 

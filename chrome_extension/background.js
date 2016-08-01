@@ -182,13 +182,12 @@ function endSession() {
     recordFlag = false;
     urls = [];
 
-    window.sessionStorage.removeItem('token');
     console.log('session ended');
 }
 
 function getSession() {
   console.log('session token requested');
-  return localStorage.getItem('name');
+  return localStorage.getItem('id');
 }
 
 function toggleRecord() {

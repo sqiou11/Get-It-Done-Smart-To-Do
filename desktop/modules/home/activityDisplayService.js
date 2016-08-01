@@ -80,7 +80,7 @@ angular.module('app')
     this.getWebPreferences = function(callback) {
       var self = this;
       $http.get('http://127.0.0.1:8081/web_preferences', {
-        params: { username: store.get('name') }
+        params: { username: store.get('id') }
       })
       .success(function(response) {
         if(response !== "error") {
@@ -144,7 +144,7 @@ angular.module('app')
 
       $http.get(self.url, {
         params: {
-          username: store.get('name'),
+          username: store.get('id'),
           start_time: start.valueOf(),
           end_time: oneDayLater.valueOf()
         }

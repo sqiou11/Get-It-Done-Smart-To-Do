@@ -16,7 +16,7 @@ function initTree() {
         configTree();
       }
     }
-    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + localStorage.getItem('name'), true); // true for asynchronous
+    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + localStorage.getItem('id'), true); // true for asynchronous
     xmlHttp.send(null);
   }
   else configTree();

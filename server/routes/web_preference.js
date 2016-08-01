@@ -5,7 +5,7 @@ module.exports = function(app, appEnv) {
   var db = appEnv.db;
 
   router.get('/', function(req, res) {
-  	db.any('SELECT * FROM preferences.' + req.query['username'])
+  	db.any('SELECT * FROM preferences.\"' + req.query['username'] + '\"')
   		.then(function(data) {
   			if(data === undefined) data = {};
   			res.send(data);
@@ -17,13 +17,12 @@ module.exports = function(app, appEnv) {
   });
 
   router.post('/', function(req, res) {
-  	var table = 'preferences.' + req.body['username'];
-  	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+  	db.none('CREATE TABLE IF NOT EXISTS preferences.\"' + req.body['username'] + '\"' +
   		'(url text NOT NULL, CONSTRAINT ' +
   		req.body['username'] + '_pkey PRIMARY KEY (url))')
   		.then(function() {
   			var params = req.body['data'];
-  			db.none('INSERT INTO ' + table + '(url) VALUES (${url})', params)
+  			db.none('INSERT INTO preferences.\"' + req.body['username'] + '\"(url) VALUES (${url})', params)
   				.then(function() {
   					res.send('success');
   				})
@@ -38,10 +37,9 @@ module.exports = function(app, appEnv) {
   });
 
   router.delete('/', function(req, res) {
-  	var table = 'preferences.' + req.query['username'];
   	var params = req.query;
   	console.log(params);
-  	db.none('DELETE FROM ' + table + ' WHERE url=${url}', params)
+  	db.none('DELETE FROM preferences.\"' + req.query['username'] + '\" WHERE url=${url}', params)
   		.then(function() {
   			res.send('success');
   		})

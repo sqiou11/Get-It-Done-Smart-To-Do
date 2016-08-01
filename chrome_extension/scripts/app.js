@@ -38,10 +38,11 @@ angular.module('app', [
     console.log('success');
     profilePromise.then(function(profile){
       // profile
-      console.log(idToken);
+      console.log(profile);
       store.set('profile', profile);
       store.set('token', idToken);
-      store.set('name', profile.nickname);
+      store.set('name', profile.name);
+      store.set('id', profile.identities[0].user_id);
       chrome.runtime.getBackgroundPage(function(bgPage) {
         bgPage.startSession();
         $location.url('/');

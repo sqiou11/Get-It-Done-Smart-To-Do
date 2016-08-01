@@ -2,7 +2,7 @@
 
 angular.module('Home')
 
-.controller('WebMonitorController', ['$scope', '$rootScope', '$http', function($scope, $rootScope, $http) {
+.controller('WebMonitorController', ['$scope', 'store', '$http', function($scope, store, $http) {
   var webMonController = this;
   this.preferences = [];
   this.addNewFlag = false;
@@ -10,7 +10,7 @@ angular.module('Home')
 
   this.getWebPreferences = function() {
     $http.get('http://127.0.0.1:8081/web_preferences', {
-      params: { username: $rootScope.globals.currentUser.username }
+      params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -28,7 +28,7 @@ angular.module('Home')
       this.newPreference += '/';
 
     $http.post('http://127.0.0.1:8081/web_preferences', {
-      username: $rootScope.globals.currentUser.username,
+      username: store.get('id'),
       data: webMonController.newPreference
     })
     .success(function(response) {
@@ -39,7 +39,7 @@ angular.module('Home')
   this.deleteWebPreference = function() {
     $http.delete('http://127.0.0.1:8081/tasks', {
       params: {
-        username: $rootScope.globals.currentUser.username,
+        username: store.get('id'),
         id: deleteId
       }
     })

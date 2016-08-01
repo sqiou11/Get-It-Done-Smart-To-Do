@@ -5,7 +5,8 @@ module.exports = function(app, appEnv) {
   var db = appEnv.db;
 
   router.get('/', function(req, res) {
-  	db.any('SELECT * FROM tasks.' + req.query['username'])
+    console.log('tasks.' + req.query.username);
+  	db.any('SELECT * FROM tasks.\"' + req.query.username + '\"')
   		.then(function(data) {
   			if(data === undefined) data = {};
   			res.send(data);
@@ -18,10 +19,9 @@ module.exports = function(app, appEnv) {
 
   router.get('/categories/upcoming', function(req, res) {
     var params = {
-      username: req.query['username'],
       due: req.query['due']
     };
-  	db.any('SELECT DISTINCT category FROM tasks.' + req.query['username'] + ' WHERE due > ${due}', params)
+  	db.any('SELECT DISTINCT category FROM tasks.\"' + req.query.username + '\" WHERE due > ${due}', params)
   		.then(function(data) {
         console.log(data);
   			if(data === undefined) data = {};
@@ -34,13 +34,12 @@ module.exports = function(app, appEnv) {
   });
 
   router.post('/', function(req, res) {
-  	var table = 'tasks.' + req.body['username'];
-  	db.none('CREATE TABLE IF NOT EXISTS ' + table +
+  	db.none('CREATE TABLE IF NOT EXISTS tasks.\"' + req.body['username'] + '\"' +
   		'(id SERIAL, description text NOT NULL, category text, due text, reminder text, done boolean, CONSTRAINT ' +
   		req.body['username'] + '_pkey PRIMARY KEY (id))')
   		.then(function() {
   			var params = req.body['data'];
-  			db.none('INSERT INTO ' + table + '(description, category, due, reminder, done) VALUES (${desc}, ${category}, ${due}, ${reminder}, NULL)', params)
+  			db.none('INSERT INTO tasks.\"' + req.body['username'] + '\"(description, category, due, reminder, done) VALUES (${desc}, ${category}, ${due}, ${reminder}, NULL)', params)
   				.then(function() {
   					res.send('success');
   				})
@@ -56,7 +55,7 @@ module.exports = function(app, appEnv) {
 
   router.put('/', function(req, res) {
     var params = req.body['data'];
-  	db.none('UPDATE tasks.' + req.body['username'] + ' SET description=${description},category=${category},due=${due},reminder=${reminder},done=${done} WHERE id=${id}', params)
+  	db.none('UPDATE tasks.\"' + req.body['username'] + '\" SET description=${description},category=${category},due=${due},reminder=${reminder},done=${done} WHERE id=${id}', params)
   		.then(function(data) {
   			res.send('success');
   		})
@@ -67,7 +66,7 @@ module.exports = function(app, appEnv) {
   });
 
   router.delete('/', function(req, res) {
-  	var table = 'tasks.' + req.query['username'];
+  	var table = 'tasks.\"' + req.query['username'] + '\"';
   	var params = req.query;
   	console.log(params);
   	db.none('DELETE FROM ' + table + ' WHERE id=${id}', params)

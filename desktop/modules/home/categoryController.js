@@ -33,7 +33,7 @@ angular.module('app')
     }
 
     $http.post('http://127.0.0.1:8081/categories', {
-      username: store.get('name'),
+      username: store.get('id'),
       data: catController.newCategory
     })
     .success(function(response) {
@@ -48,7 +48,7 @@ angular.module('app')
     this.edit.id = this.categories[index].id; // grab the table ID of the category that was modified
 
     $http.put('http://127.0.0.1:8081/categories', {
-      username: store.get('name'),
+      username: store.get('id'),
       data: catController.edit
     })
     .success(function(response) {
@@ -60,7 +60,7 @@ angular.module('app')
   this.getCategories = function() {
     console.log("getCategories()");
     $http.get('http://127.0.0.1:8081/categories', {
-      params: { username: store.get('name') }
+      params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
@@ -75,7 +75,7 @@ angular.module('app')
   this.deleteCategory = function(deleteId) {
     $http.delete('http://127.0.0.1:8081/categories', {
       params: {
-        username: store.get('name'),
+        username: store.get('id'),
         id: deleteId
       }
     })
