@@ -92,7 +92,7 @@ angular.module('app')
 
       if(!start.isBefore(end)) {
         var totalTime = this.productivityData[0].y + this.productivityData[1].y;
-
+        console.log(this.urlArrays);
         // use completely urlArrays to create breakdownData
         for(var i = 0; i < this.urlArrays.length; i++) {
           this.productivityData[i].y = parseFloat(((this.productivityData[i].y / totalTime) * 100).toFixed(2));
@@ -109,7 +109,7 @@ angular.module('app')
         if(this.displayParam !== 'day') this.drawTimeSeries();
         return;
       }
-      var oneDayLater = moment(start).add(1, 'day');
+      var oneDayLater = moment(start).add(1, 'hour');
 
       $http.get(self.url, {
         params: {
@@ -137,20 +137,24 @@ angular.module('app')
             tmpTotal += total_time;
 
             // update the individual url's total
+            var exists = false;
             for(var j = 0; j < self.urlArrays[idx].values.length; j++)
               if(self.urlArrays[idx].urls[j] === data[i].url) {
                 self.urlArrays[idx].values[j] += total_time;
-                continue;
+                exists = true;
+                break;
               }
-            self.urlArrays[idx].urls.push(data[i].url);
-            self.urlArrays[idx].values.push(total_time);
+            if(!exists) {
+              self.urlArrays[idx].urls.push(data[i].url);
+              self.urlArrays[idx].values.push(total_time);
+            }
           }
           self.timeseriesData.data.push([start.valueOf() - timezoneOffset, parseFloat(((tmpProductivity / tmpTotal) * 100).toFixed(2))]);
         } else {
           console.log('Error: ' + data);
           self.timeseriesData.data.push([start.valueOf() - timezoneOffset, 0]);
         }
-        self.getWebData(start.add(1, 'day'), end);
+        self.getWebData(start.add(1, 'hour'), end);
       });
     }
 

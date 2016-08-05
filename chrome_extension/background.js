@@ -74,7 +74,7 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     currActiveTabId = activeInfo.tabId;
 
     //var currDate = new Date();
-    var timestamp = Date.now();
+    timestamp = Date.now();
     newURL = getBaseURL(tab.url);
     prevURL = getBaseURL(urls[prevActiveTabId] || '');
     console.log('changed tab, resetting timer');
@@ -90,13 +90,13 @@ chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 
 function processURL() {
   console.log('processURL(' + newURL + ', ' + prevURL + ', ' + timestamp + ')');
-  if(newURL != prevURL) {
+  if(newURL !== prevURL) {
     if(getSession() && newURL.substring(0, 9) !== "chrome://") query(newURL);
     if(recordFlag) {
       // start logging the new active tab's URL
-      start_web_log(getSession(), currentBaseUrl, timestamp);
+      start_web_log(getSession(), newURL, timestamp);
       if(prevURL !== '')    // if there was a previous active tab, end the logging for that one
-        end_web_log(getSession(), prevBaseUrl, timestamp);
+        end_web_log(getSession(), prevURL, timestamp);
     }
   }
 }
@@ -172,6 +172,7 @@ function startSession() {
       timestamp = Date.now();
       clearTimeout(timer);
       timer = setTimeout(processURL, 30*1000);
+      console.log('timer started');
     });
 }
 
@@ -201,13 +202,16 @@ function toggleRecord() {
     // end the recording of the acive tab is user is currently recording
     if(!recordFlag) {
         //var currDate = new Date();
-        var timestamp = Date.now();
-        end_web_log(getSession(), getBaseURL(urls[currActiveTabId]), timestamp);
+        var t = Date.now();
+        end_web_log(getSession(), getBaseURL(urls[currActiveTabId]), t);
     } else {
-        var timestamp = Date.now();
         console.log("current active tab = " + currActiveTabId);
-        start_web_log(getSession(), getBaseURL(urls[currActiveTabId]), timestamp);
-        query(getBaseURL(urls[currActiveTabId]));
+        newURL = getBaseURL(urls[currActiveTabId]);
+        prevURL = '';
+        timestamp = Date.now();
+        clearTimeout(timer);
+        timer = setTimeout(processURL, 30*1000);
+        console.log('timer started');
     }
 }
 

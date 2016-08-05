@@ -83,7 +83,8 @@ module.exports = function(app, appEnv) {
   	};
     db.none('CREATE OR REPLACE VIEW current_totals AS ' +
       'SELECT url, active, distracting, start_time, CASE WHEN active=TRUE THEN cast(extract(epoch from now()) * 1000 as bigint) ELSE end_time END FROM ' +
-      ' websites.\"' + req.query['username'] + '\" WHERE start_time>=${start_time} AND start_time<${end_time}', params)
+      ' websites.\"' + req.query['username'] + '\" ' +
+      'WHERE (start_time>=${start_time} AND start_time<${end_time}) OR (end_time>${start_time} AND end_time<=${end_time}) OR (start_time<${start_time} AND end_time>${end_time})', params)
   	  .then(function() {
         db.many('SELECT url, distracting, SUM(end_time-start_time) as total_time FROM current_totals GROUP BY url, distracting')
       		.then(function(data) {
