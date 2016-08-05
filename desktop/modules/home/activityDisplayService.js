@@ -3,13 +3,6 @@
 angular.module('app')
 
 .factory('ActivityDisplay', function($http, store) {
-  var chartParams = {};
-  var displayParam = '';
-  var preferences = [];
-  var chosen_time = moment();
-  var start_time = undefined;
-  var end_time = undefined;
-  var graphElement = undefined;
 
   var ActivityDisplay = function(graph, dParam, log_type) {
     this.graphElement = undefined;

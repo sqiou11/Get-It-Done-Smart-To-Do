@@ -2,6 +2,8 @@
 var urls = [];
 var currActiveTabId = -1;
 var recordFlag = false;
+var timer, timestamp, prevURL, newURL;
+
 /**
  * Get the current URL.
  *
@@ -52,21 +54,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   // check to make sure the update is a url change, and this url change is for the active tab
   if(changeInfo.url != undefined && tabId == currActiveTabId) {
   	console.log("URL change in active tab: " + changeInfo.url);
-    var prevURL = urls[tabId];  // grab the original url before we update the array
+    var prev = urls[tabId];  // grab the original url before we update the array
   	urls[tabId] = changeInfo.url;
 
-    //var currDate = new Date();
-    var timestamp = Date.now();
-    var currentBaseUrl = getBaseURL(urls[tabId]);
-    var prevBaseUrl = getBaseURL(prevURL);
-    // if the old and new URLs have different bases and we're recording, then log the change
-    if(currentBaseUrl != prevBaseUrl) {
-      if(getSession() && currentBaseUrl.substring(0, 9) !== "chrome://") query(currentBaseUrl);
-      if(recordFlag) {
-        start_web_log(getSession(), currentBaseUrl, timestamp);
-        end_web_log(getSession(), prevBaseUrl, timestamp);
-      }
-    }
+    timestamp = Date.now();
+    newURL = getBaseURL(urls[tabId]);
+    prevURL = getBaseURL(prevURL);
+    console.log('updated current tab, resetting timer');
+    clearTimeout(timer);
+    timer = setTimeout(processURL, 30*1000);
   }
 });
 
@@ -79,18 +75,11 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
     //var currDate = new Date();
     var timestamp = Date.now();
-    var currentBaseUrl = getBaseURL(tab.url);
-    var prevBaseUrl = getBaseURL(urls[prevActiveTabId] || '');
-    if(currentBaseUrl != prevBaseUrl) {
-      if(getSession() && currentBaseUrl.substring(0, 9) !== "chrome://") query(currentBaseUrl);
-      if(recordFlag) {
-        console.log("changed active tab: to " + currentBaseUrl + " from " + getBaseURL(urls[prevActiveTabId]));
-        // start logging the new active tab's URL
-        start_web_log(getSession(), currentBaseUrl, timestamp);
-        if(prevActiveTabId > -1)    // if there was a previous active tab, end the logging for that one
-          end_web_log(getSession(), prevBaseUrl, timestamp);
-      }
-    }
+    newURL = getBaseURL(tab.url);
+    prevURL = getBaseURL(urls[prevActiveTabId] || '');
+    console.log('changed tab, resetting timer');
+    clearTimeout(timer);
+    timer = setTimeout(processURL, 30*1000);
   });
 });
 
@@ -98,6 +87,19 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
 	console.log("tab closed: " + urls[tabId]);
 });
+
+function processURL() {
+  console.log('processURL(' + newURL + ', ' + prevURL + ', ' + timestamp + ')');
+  if(newURL != prevURL) {
+    if(getSession() && newURL.substring(0, 9) !== "chrome://") query(newURL);
+    if(recordFlag) {
+      // start logging the new active tab's URL
+      start_web_log(getSession(), currentBaseUrl, timestamp);
+      if(prevURL !== '')    // if there was a previous active tab, end the logging for that one
+        end_web_log(getSession(), prevBaseUrl, timestamp);
+    }
+  }
+}
 
 // function to make POST request to server that adds a new web log into the DB table
 function start_web_log(username, url, start_time) {
@@ -165,7 +167,11 @@ function startSession() {
     console.log('starting session');
     initTree();
     getCurrentTabBaseUrl(function(url) {
-      if(url.substring(0, 9) !== "chrome://") query(url);
+      newURL = url;
+      prevURL = '';
+      timestamp = Date.now();
+      clearTimeout(timer);
+      timer = setTimeout(processURL, 30*1000);
     });
 }
 
@@ -187,24 +193,22 @@ function endSession() {
 
 function getSession() {
   console.log('session token requested');
-  return localStorage.getItem('id');
+  return localStorage.getItem('id').replace(/\"/g, '');
 }
 
 function toggleRecord() {
+    recordFlag = !recordFlag;
     // end the recording of the acive tab is user is currently recording
-    if(recordFlag) {
+    if(!recordFlag) {
         //var currDate = new Date();
         var timestamp = Date.now();
         end_web_log(getSession(), getBaseURL(urls[currActiveTabId]), timestamp);
     } else {
         var timestamp = Date.now();
-        getCurrentTabBaseUrl(function(baseURL) {
-          console.log("current active tab = " + currActiveTabId);
-            start_web_log(getSession(), baseURL, timestamp);
-        });
+        console.log("current active tab = " + currActiveTabId);
+        start_web_log(getSession(), getBaseURL(urls[currActiveTabId]), timestamp);
+        query(getBaseURL(urls[currActiveTabId]));
     }
-
-    recordFlag = !recordFlag;
 }
 
 function getRecordFlag() { return recordFlag; }

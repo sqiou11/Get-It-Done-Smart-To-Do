@@ -6,24 +6,26 @@ module.exports = function(app, appEnv) {
 
   // handle requests to start the log entry of a URL (add start time and set active to 'yes')
   router.post('/start', function(req, res) {
-  	console.log('received POST request to start log for ' + req.body.url);
-  	db.none('CREATE TABLE IF NOT EXISTS websites.\"' + req.body['username'] + '\"' +
-  		'(url text NOT NULL, start_time text NOT NULL, end_time text, active boolean NOT NULL, CONSTRAINT ' +
-  		req.body['username'] + '_pkey PRIMARY KEY (url, start_time))')
+  	console.log('received POST request to start log for ' + req.body.url + ' table = websites.\"' + req.body.username + '\"');
+  	db.none('CREATE TABLE IF NOT EXISTS websites.\"' + req.body.username + '\"' +
+  		'(url text NOT NULL, start_time bigint NOT NULL, end_time bigint, active boolean NOT NULL, distracting boolean, CONSTRAINT \"' +
+  		req.body['username'] + '_pkey\" PRIMARY KEY (url, start_time))')
   		.then(function() {
   			var params = {
   				url: req.body['url'],
   				start_time: req.body['start_time']
   			};
-  			db.none('INSERT INTO websites.\"' + req.body['username'] + '\"(url, start_time, end_time, active) VALUES (${url}, ${start_time}, NULL, TRUE)', params)
+  			db.none('INSERT INTO websites.\"' + req.body['username'] + '\"(url, start_time, end_time, active, distracting) VALUES (${url}, ${start_time}, NULL, TRUE, NULL)', params)
   				.then(function(data) {
   					res.send('success');
   				})
   				.catch(function(error) {
+            console.log('error during table insertion');
   					console.log(error);
   				});
   		})
   		.catch(function(error) {
+        console.log('error during table creation');
   			console.log(error);
   		});
   });
@@ -62,7 +64,8 @@ module.exports = function(app, appEnv) {
   		start_time: req.query['start_time'],
   		end_time: req.query['end_time']
   	};
-  	db.many('SELECT * FROM websites.\"' + req.query['username'] + '\" WHERE start_time>=${start_time} AND start_time<${end_time}', params)
+
+    db.many('SELECT * FROM websites.\"' + req.query['username'] + '\" WHERE (start_time>=${start_time} AND start_time<${end_time}) OR (end_time>=${start_time} AND end_time<${end_time})', params)
   		.then(function(data) {
   			//console.log(data);
   			res.send(data);
@@ -71,6 +74,32 @@ module.exports = function(app, appEnv) {
   			console.log(error);
   			res.send('error');
   		})
+  });
+
+  router.get('/current_totals', function(req, res) {
+  	var params = {
+  		start_time: req.query['start_time'],
+  		end_time: req.query['end_time']
+  	};
+    db.none('CREATE OR REPLACE VIEW current_totals AS ' +
+      'SELECT url, active, distracting, start_time, CASE WHEN active=TRUE THEN cast(extract(epoch from now()) * 1000 as bigint) ELSE end_time END FROM ' +
+      ' websites.\"' + req.query['username'] + '\" WHERE start_time>=${start_time} AND start_time<${end_time}', params)
+  	  .then(function() {
+        db.many('SELECT url, distracting, SUM(end_time-start_time) as total_time FROM current_totals GROUP BY url, distracting')
+      		.then(function(data) {
+      			//console.log(data);
+      			res.send(data);
+      		})
+      		.catch(function(error) {
+      			console.log(error);
+      			res.send('error');
+      		});
+      })
+      .catch(function(error) {
+        console.log('error creating view');
+        console.log(error);
+        res.send('error');
+      });
   });
 
   app.use('/web_log', router);

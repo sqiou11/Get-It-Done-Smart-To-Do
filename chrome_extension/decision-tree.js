@@ -96,7 +96,7 @@ var dt = (function () {
             }
             return all;
         }
-        return fn([], arr, []);
+        return fn([], arr, []) || [];
     }
 
     /**

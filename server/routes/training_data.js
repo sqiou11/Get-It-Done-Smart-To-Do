@@ -19,11 +19,11 @@ module.exports = function(app, appEnv) {
 
   router.post('/', function(req, res) {
   	db.none('CREATE TABLE IF NOT EXISTS trainingdata.\"' + req.body['username'] + '\"' +
-  		'(categories text[] NOT NULL, urltopics text[] NOT NULL, distracting boolean NOT NULL, CONSTRAINT ' +
-  		req.body['username'] + '_pkey PRIMARY KEY (categories, urltopics))')
+  		'(categories text[] NOT NULL, urltopics text[] NOT NULL, distracting boolean NOT NULL, hour integer NOT NULL, day integer NOT NULL, CONSTRAINT \"' +
+  		req.body['username'] + '_pkey\" PRIMARY KEY (categories, urltopics, hour, day))')
   		.then(function() {
   			var params = req.body['data'];
-  			db.none('INSERT INTO trainingdata.\"' + req.body['username'] + '\"(categories, urltopics, distracting) VALUES (${categories}, ${urltopics}, ${distracting})', params)
+  			db.none('INSERT INTO trainingdata.\"' + req.body['username'] + '\"(categories, urltopics, distracting, hour, day) VALUES (${categories}::text[], ${urltopics}, ${distracting}, ${hour}, ${day})', params)
   				.then(function() {
   					res.send('success');
   				})
@@ -39,7 +39,7 @@ module.exports = function(app, appEnv) {
 
   router.put('/', function(req, res) {
     var params = req.body['data'];
-  	db.none('UPDATE trainingdata.\"' + req.body['username'] + '\" SET distracting=${distracting} WHERE categories=${categories} AND urltopics=${urltopics}', params)
+  	db.none('UPDATE trainingdata.\"' + req.body['username'] + '\" SET distracting=${distracting} WHERE categories=${categories}::text[] AND urltopics=${urltopics} AND hour=${hour} AND day=${day}', params)
   		.then(function(data) {
   			res.send('success');
   		})
@@ -49,7 +49,7 @@ module.exports = function(app, appEnv) {
   		});
   });
 
-  router.delete('/', function(req, res) {
+  /*router.delete('/', function(req, res) {
   	var params = req.query;
   	console.log(params);
   	db.none('DELETE FROM trainingData.\"' + req.query['username'] + '\" WHERE id=${id}', params)
@@ -60,7 +60,7 @@ module.exports = function(app, appEnv) {
   			console.log(error);
   			res.send('error');
   		});
-  });
+  });*/
 
   app.use('/training_data', router);
 }

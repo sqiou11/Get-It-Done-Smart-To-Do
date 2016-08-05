@@ -13,12 +13,13 @@ angular.module('app')
 
   $scope.logout = function() {
     console.log('logging out');
+    store.remove('profile');
+    store.remove('token');
+    store.remove('name');
+    store.remove('id');
+    auth.signout();
     chrome.runtime.getBackgroundPage(function(bgPage) {
       bgPage.endSession();
-      store.remove('profile');
-      store.remove('token');
-      store.remove('name');
-      auth.signout();
       $location.url('/login');
     });
   }

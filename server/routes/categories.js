@@ -5,28 +5,20 @@ module.exports = function(app, appEnv) {
   var db = appEnv.db;
 
   router.get('/', function(req, res) {
-  	db.none('CREATE TABLE IF NOT EXISTS categories.\"' + req.query['username'] + '\"' +
-  		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
-  		req.query['username'] + '_pkey PRIMARY KEY (id))')
-  		.then(function() {
-  			db.any('SELECT * FROM categories.\"' + req.query['username'] + '\"')
-  				.then(function(data) {
-  					res.send(data);
-  				})
-  				.catch(function(error) {
-  					console.log(error);
-  					res.send('error');
-  				});
-  		})
-  		.catch(function(error) {
-  			console.log(error);
-  		});
+		db.any('SELECT * FROM categories.\"' + req.query['username'] + '\"')
+			.then(function(data) {
+				res.send(data);
+			})
+			.catch(function(error) {
+				console.log(error);
+				res.send('error');
+			});
   });
 
   router.post('/', function(req, res) {
   	db.none('CREATE TABLE IF NOT EXISTS categories.\"' + req.body['username'] + '\"' +
-  		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT ' +
-  		req.body['username'] + '_pkey PRIMARY KEY (id))')
+  		'(id SERIAL, name text NOT NULL, monitor boolean NOT NULL, CONSTRAINT \"' +
+  		req.body['username'] + '_pkey\" PRIMARY KEY (id))')
   		.then(function() {
 				var params = req.body['data'];
 				db.none('INSERT INTO categories.\"' + req.body['username'] + '\"(name,monitor) VALUES (${name},${monitor})', params)

@@ -18,6 +18,7 @@ module.exports = function(app, appEnv) {
   });
 
   router.get('/categories/upcoming', function(req, res) {
+    console.log('getting upcoming categories, username = ' + req.query.username);
     var params = {
       due: req.query['due']
     };

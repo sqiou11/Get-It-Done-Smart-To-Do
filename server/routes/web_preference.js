@@ -18,8 +18,8 @@ module.exports = function(app, appEnv) {
 
   router.post('/', function(req, res) {
   	db.none('CREATE TABLE IF NOT EXISTS preferences.\"' + req.body['username'] + '\"' +
-  		'(url text NOT NULL, CONSTRAINT ' +
-  		req.body['username'] + '_pkey PRIMARY KEY (url))')
+  		'(url text NOT NULL, CONSTRAINT \"' +
+  		req.body['username'] + '_pkey\" PRIMARY KEY (url))')
   		.then(function() {
   			var params = req.body['data'];
   			db.none('INSERT INTO preferences.\"' + req.body['username'] + '\"(url) VALUES (${url})', params)

@@ -27,7 +27,7 @@ angular.module('app')
   };
 })
 
-.controller('WebActivityHourDisplayController', ['$http', '$rootScope', 'ActivityDisplay', function($http, $rootScope, ActivityDisplay) {
+.controller('WebActivityHourDisplayController', ['$http', '$rootScope', 'ActivityDisplay', 'ProductivityDisplay', function($http, $rootScope, ActivityDisplay, ProductivityDisplay) {
   var self = this;
   this.display = new ActivityDisplay($('#web-graph-container'), 'hour', 'web_log');
 

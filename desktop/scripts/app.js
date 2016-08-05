@@ -51,8 +51,9 @@ angular.module('app', [
       data: { requiresLogin: true }
     })
     .state('home.productivity', {
-      //url: "/list",
-      //templateUrl: "modules/home/views/main.html",
+      url: "/productivity",
+      templateUrl: "modules/home/views/productivity.html",
+      data: { requiresLogin: true }
     })
     .state('home.settings', {
       url: "/settings",

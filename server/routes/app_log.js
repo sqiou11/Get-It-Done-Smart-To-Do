@@ -8,8 +8,8 @@ module.exports = function(app, appEnv) {
   router.post('/start', function(req, res) {
   	console.log('received POST request to start log for ' + req.body.name);
   	db.none('CREATE TABLE IF NOT EXISTS applications.\"' + req.body['username'] + '\"' +
-  		'(name text NOT NULL, start_time text NOT NULL, end_time text, active boolean NOT NULL, machine text NOT NULL, CONSTRAINT ' +
-  		req.body['username'] + '_pkey PRIMARY KEY (name, start_time, machine))')
+  		'(name text NOT NULL, start_time text NOT NULL, end_time text, active boolean NOT NULL, machine text NOT NULL, CONSTRAINT \"' +
+  		req.body['username'] + '_pkey\" PRIMARY KEY (name, start_time, machine))')
   		.then(function() {
   			var params = {
   				name: req.body['name'],

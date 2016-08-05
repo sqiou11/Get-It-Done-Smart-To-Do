@@ -10,7 +10,7 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "scripts": ["background.js", "decision-tree.js", "learner.js", "js/md5.min.js"],
+        "scripts": ["background.js", "decision-tree.js", "learner.js", "js/md5.min.js", "js/moment.min.js"],
         "persistent": false
     },
     "permissions": [

@@ -16,7 +16,7 @@ function initTree() {
         configTree();
       }
     }
-    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + localStorage.getItem('id'), true); // true for asynchronous
+    xmlHttp.open("GET", 'http://127.0.0.1:8081/training_data?username=' + getSession(), true); // true for asynchronous
     xmlHttp.send(null);
   }
   else configTree();
@@ -101,14 +101,18 @@ function query(url) {
   var upcomingCategoriesRequestUrl = 'http://127.0.0.1:8081/tasks/categories/upcoming';
   upcomingCategoriesRequestUrl += '?username=' + getSession() + '&due=' + Date.now();
 
+  var dayOfWeek = moment().day();
+  var hourOfDay = moment().hour();
+
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function() {
     if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
       upcomingTaskCategories = JSON.parse(xmlHttp.responseText);
       // Testing Decision Tree and Random Forest
-      test = { categories: [] };
+      test = { categories: [], day: dayOfWeek, hour: hourOfDay };
       for(var i = 0; i < upcomingTaskCategories.length; i++)
         test.categories.push(upcomingTaskCategories[i]["category"]);
+
       //console.log('predicting ' + JSON.stringify(test));
       classify(url, function() {
         decisionTreePrediction = decisionTree.predict(test);
@@ -167,13 +171,12 @@ function modifyTestCase(value) {
 
     postData.data = data[testId];
     var xmlHttp = new XMLHttpRequest();
-    // no need to set the onreadystatechange function of our request, since we don't care to wait for a response
-    /*xmlHttp.onreadystatechange = function() {
+    xmlHttp.onreadystatechange = function() {
       if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        data = JSON.parse(xmlHttp.responseText);
-        configTree();
+        initTree();
+        query(getBaseURL(urls[currActiveTabId]));
       }
-    }*/
+    }
     xmlHttp.open("POST", 'http://127.0.0.1:8081/training_data', true); // true for asynchronous
     xmlHttp.setRequestHeader('Content-Type', 'application/json');
     xmlHttp.send(JSON.stringify(postData));
@@ -184,19 +187,16 @@ function modifyTestCase(value) {
 
     postData.data = data[testId];
     var xmlHttp = new XMLHttpRequest();
-    /*xmlHttp.onreadystatechange = function() {
+    xmlHttp.onreadystatechange = function() {
       if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-        data = JSON.parse(xmlHttp.responseText);
-        configTree();
+        initTree();
+        query(getBaseURL(urls[currActiveTabId]));
       }
-    }*/
+    }
     xmlHttp.open("PUT", 'http://127.0.0.1:8081/training_data', true); // true for asynchronous
     xmlHttp.setRequestHeader('Content-Type', 'application/json');
     xmlHttp.send(JSON.stringify(postData));
   }
-
-  initTree();
-  query(getBaseURL(urls[currActiveTabId]));
 }
 
 function updateDisplay() {
