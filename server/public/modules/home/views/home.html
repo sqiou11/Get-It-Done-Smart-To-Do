@@ -1,0 +1,126 @@
+<div id="wrapper">
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Get It Done</a>
+      </div>
+      <!-- /.navbar-header -->
+
+      <ul class="nav navbar-top-links navbar-right">
+        <!-- /.dropdown -->
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href>
+            <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-user">
+            <li><a href><i class="fa fa-user fa-fw"></i> User Profile</a>
+            </li>
+            <li><a href><i class="fa fa-gear fa-fw"></i> Settings</a>
+            </li>
+            <li class="divider"></li>
+            <li ng-click="logout()"><a href><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+            </li>
+          </ul>
+          <!-- /.dropdown-user -->
+        </li>
+        <!-- /.dropdown -->
+      </ul>
+      <!-- /.navbar-top-links -->
+
+      <div class="navbar-default sidebar" role="navigation">
+        <div class="sidebar-nav navbar-collapse">
+          <ul class="nav" id="side-menu">
+            <li>
+              <a href ui-sref=".dash"><i class="fa fa-home fa-fw"></i> Home</a>
+            </li>
+            <li ng-controller="TaskController as taskCtrl">
+              <a href><i class="fa fa-sticky-note fa-fw"></i> Tasks</a>
+              <ul class="nav nav-second-level">
+                <li>
+                  <a href ui-sref=".upcomingTasks">Upcoming <span class="badge" class="pull-right">{{taskCtrl.numUpcoming}}</span></a>
+                </li>
+                <li>
+                  <a href ui-sref=".pastTasks">Previous <span class="badge" class="pull-right">{{taskCtrl.numPrevious}}</span></a>
+                </li>
+              </ul>
+            </li>
+            <li ng-controller="CategoryController as categoryCtrl">
+              <a href aria-expanded="false"><i class="fa fa-list-ul fa-fw"></i> Categories<span class="fa arrow"></span></a>
+              <ul class="nav nav-second-level">
+                <li ng-repeat="category in categoryCtrl.categories">
+                  <a href>{{category.name}}</a>
+                </li>
+              </ul>
+              <!-- /.nav-second-level -->
+            </li>
+            <li>
+              <a href ui-sref=".activity"><i class="fa fa-line-chart fa-fw"></i> Activity</a>
+            </li>
+            <li>
+              <a href ui-sref=".productivity"><i class="fa fa-area-chart fa-fw"></i> Productivity</a>
+            </li>
+            <li>
+              <a href ui-sref=".settings"><i class="fa fa-gear fa-fw"></i> Settings</a>
+            </li>
+          </ul>
+        </div>
+        <!-- /.sidebar-collapse -->
+    </div>
+    <!-- /.navbar-static-side -->
+  </nav>
+
+  <div id="page-wrapper">
+
+    <div ui-view></div>
+
+  </div>
+  <!-- /#page-wrapper -->
+</div>
+<!-- /#wrapper -->
+
+<!-- all the contents of sb-admin-2.js needs to be loaded here (and apparently doing a script reference is bad) -->
+<script>
+  $(function() {
+      $('#side-menu').metisMenu();
+  });
+
+  //Loads the correct sidebar on window load,
+  //collapses the sidebar on window resize.
+  // Sets the min-height of #page-wrapper to window size
+  $(function() {
+      $(window).bind("load resize", function() {
+          topOffset = 50;
+          width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+          if (width < 768) {
+              $('div.navbar-collapse').addClass('collapse');
+              topOffset = 100; // 2-row-menu
+          } else {
+              $('div.navbar-collapse').removeClass('collapse');
+          }
+
+          height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+          height = height - topOffset;
+          if (height < 1) height = 1;
+          if (height > topOffset) {
+              $("#page-wrapper").css("min-height", (height) + "px");
+          }
+      });
+
+      /*var url = window.location;
+      var element = $('ul.nav a').filter(function() {
+          return this.href == url || url.href.indexOf(this.href) == 0;
+      }).addClass('active').parent().parent().addClass('in').parent();
+      if (element.is('li')) {
+          element.addClass('active');
+      }*/
+  });
+
+  $(window).resize(); // need to explicitly call resize event since the above function never gets triggered
+                      // when we "load" the menu
+</script>

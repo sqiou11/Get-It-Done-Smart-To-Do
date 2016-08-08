@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-lg-12">
+    <h1 class="page-header">Settings</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="panel panel-primary" ng-controller="CategoryController as categoryCtrl">
+    <div class="panel-heading">
+      <h3 class="panel-title">Categories</h3>
+    </div>
+    <div class="panel-body">
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="category in categoryCtrl.categories">
+        <div class="row">
+          <div class="col-xs-4" ng-show="!category.edit">
+            {{category.name}}
+          </div>
+          <div class="col-xs-4" ng-if="category.edit">
+            <input type="text" class="invis" ng-model="categoryCtrl.edit.name" ng-init="categoryCtrl.edit.name=category.name">
+          </div>
+
+          <div class="col-xs-4" ng-show="!category.edit">
+            <i class="fa" ng-class="{ 'fa-eye':category.monitor, 'fa-eye-slash':!category.monitor }" aria-hidden="true"></i>
+          </div>
+          <div class="col-xs-4" ng-if="category.edit">
+            <input type="checkbox" ng-init="categoryCtrl.edit.monitor=category.monitor" ng-model="categoryCtrl.edit.monitor">
+          </div>
+
+          <div class="col-xs-4" ng-show="!category.edit">
+            <a href><span class="glyphicon glyphicon-pencil" ng-click="category.edit=true"></span></a>
+            <a href><span class="glyphicon glyphicon-trash" ng-click=""></span></a>
+          </div>
+          <div class="col-xs-4" ng-if="category.edit">
+            <button type="button" class="btn btn-success" ng-click="categoryCtrl.editCategory($index)"><span class="glyphicon glyphicon-ok"></span></button>
+            <button type="button" class="btn btn-danger" ng-click="category.edit=false"><span class="glyphicon glyphicon-remove"></span></button>
+          </div>
+        </div>
+      </li>
+      <li id="newCategory" class="list-group-item" ng-show="categoryCtrl.isCreatingCat()">
+        <div class="row">
+          <div class="col-xs-4"><input type="text" class="invis" placeholder="New category" ng-model="categoryCtrl.newCategory.name" ng-change="categoryCtrl.createCatError=false"></div>
+          <div class="col-xs-4"><input type="checkbox" ng-model="categoryCtrl.newCategory.monitor"></div>
+          <div class="col-xs-4">
+            <button type="button" class="btn btn-primary btn-sm" ng-click="categoryCtrl.addCategory()">Save</button>
+            <a href ng-click="categoryCtrl.setCreateCat(false)">Cancel</a>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <div class="panel-footer">
+      <button type="button" class="btn btn-success" ng-click="categoryCtrl.setCreateCat(true)">Add</button>
+      <!-- <button type="button" class="btn btn-primary" ng-click="categoryCtrl.submitCatChanges()">Save</button> -->
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="panel panel-primary" ng-controller="WebMonitorController as webMonCtrl">
+    <div class="panel-heading">
+      <h3 class="panel-title">Website Monitoring</h3>
+    </div>
+    <div class="panel-body">
+      Here are the websites you want to be monitored
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="website in webMonCtrl.preferences">{{website.url}}</li>
+      <li class="list-group-item" ng-show="webMonCtrl.addNewFlag">
+        <div class="row">
+          <div class="col-xs-8">
+            <input type="text" class="invis" placeholder="www.website.com" ng-model="webMonCtrl.newPreference.url">
+          </div>
+          <div class="col-xs-4">
+            <button type="button" class="btn btn-primary btn-sm" ng-click="webMonCtrl.addWebPreference()">Save</button>
+            <a href ng-click="webMonCtrl.addNewFlag=false">Cancel</a>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <div class="panel-footer">
+      <button type="button" class="btn btn-success" ng-click="webMonCtrl.initForm()">Add</button>
+    </div>
+  </div>
+</div>
