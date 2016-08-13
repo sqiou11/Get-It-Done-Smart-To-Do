@@ -21,7 +21,7 @@ angular.module('app')
       this.pieGraphElement = pieGraph;
       this.lineGraphElement = lineGraph;
       this.displayParam = dParam;
-      this.url = 'http://127.0.0.1:8081/web_log/current_totals';
+      this.url = 'http://ec2-52-36-92-222.us-west-2.compute.amazonaws.com/web_log/current_totals';
       this.setRange(this.displayParam);
     }
     this.getDisplayParam = function() {
@@ -111,51 +111,56 @@ angular.module('app')
       }
       var oneDayLater = moment(start).add(1, 'hour');
 
-      $http.get(self.url, {
-        params: {
-          username: store.get('id'),
-          start_time: start.valueOf(),
-          end_time: oneDayLater.valueOf()
-        }
-      })
-      .success(function (data) {
-        if(data !== "error") {
-          console.log(data);
-          var tmpProductivity = 0, tmpTotal = 0;
-          for(var i = 0; i < data.length; i++) {
-            var idx, total_time = parseInt(data[i].total_time);
-            // update the category totals
-            if(data[i].distracting) {
-              self.productivityData[distractingIdx].y += total_time;
-              idx = distractingIdx;
-            }
-            else {
-              self.productivityData[productiveIdx].y += total_time;
-              tmpProductivity += total_time;
-              idx = productiveIdx;
-            }
-            tmpTotal += total_time;
-
-            // update the individual url's total
-            var exists = false;
-            for(var j = 0; j < self.urlArrays[idx].values.length; j++)
-              if(self.urlArrays[idx].urls[j] === data[i].url) {
-                self.urlArrays[idx].values[j] += total_time;
-                exists = true;
-                break;
-              }
-            if(!exists) {
-              self.urlArrays[idx].urls.push(data[i].url);
-              self.urlArrays[idx].values.push(total_time);
-            }
+      if(start.isBefore(moment())) {
+        $http.get(self.url, {
+          params: {
+            username: store.get('id'),
+            start_time: start.valueOf(),
+            end_time: oneDayLater.valueOf()
           }
-          self.timeseriesData.data.push([start.valueOf() - timezoneOffset, parseFloat(((tmpProductivity / tmpTotal) * 100).toFixed(2))]);
-        } else {
-          console.log('Error: ' + data);
-          self.timeseriesData.data.push([start.valueOf() - timezoneOffset, 0]);
-        }
+        })
+        .success(function (data) {
+          if(data !== "error") {
+            console.log(data);
+            var tmpProductivity = 0, tmpTotal = 0;
+            for(var i = 0; i < data.length; i++) {
+              var idx, total_time = parseInt(data[i].total_time);
+              // update the category totals
+              if(data[i].distracting) {
+                self.productivityData[distractingIdx].y += total_time;
+                idx = distractingIdx;
+              }
+              else {
+                self.productivityData[productiveIdx].y += total_time;
+                tmpProductivity += total_time;
+                idx = productiveIdx;
+              }
+              tmpTotal += total_time;
+
+              // update the individual url's total
+              var exists = false;
+              for(var j = 0; j < self.urlArrays[idx].values.length; j++)
+                if(self.urlArrays[idx].urls[j] === data[i].url) {
+                  self.urlArrays[idx].values[j] += total_time;
+                  exists = true;
+                  break;
+                }
+              if(!exists) {
+                self.urlArrays[idx].urls.push(data[i].url);
+                self.urlArrays[idx].values.push(total_time);
+              }
+            }
+            self.timeseriesData.data.push([start.valueOf() - timezoneOffset, parseFloat(((tmpProductivity / tmpTotal) * 100).toFixed(2))]);
+          } else {
+            console.log('Error: ' + data);
+            self.timeseriesData.data.push([start.valueOf() - timezoneOffset, 0]);
+          }
+          self.getWebData(start.add(1, 'hour'), end);
+        });
+      } else {
+        self.timeseriesData.data.push([start.valueOf() - timezoneOffset, 0]);
         self.getWebData(start.add(1, 'hour'), end);
-      });
+      }
     }
 
     this.drawPieChart = function() {

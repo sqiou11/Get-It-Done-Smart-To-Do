@@ -15,12 +15,12 @@ angular.module('app')
     this.preferences = [];
     this.url = '';
     this.categoryTotals = {};
+    this.baseUrl = 'http://ec2-52-36-92-222.us-west-2.compute.amazonaws.com/'
 
     this.initialize = function() {
-      var baseUrl = 'http://127.0.0.1:8081/'
       this.graphElement = graph;
       this.displayParam = dParam;
-      this.url = baseUrl + log_type;
+      this.url = this.baseUrl + log_type;
       this.setRange(this.displayParam);
     }
     this.getDisplayParam = function() {
@@ -60,7 +60,7 @@ angular.module('app')
       var self = this;
       //console.log(this.graphType);
       // get the users web preferences, with the callback function to be called aftwards
-      if(this.url === 'http://127.0.0.1:8081/web_log') {
+      if(this.url === this.baseUrl + 'web_log') {
         this.getWebPreferences(function() {
           self.createGraphData();
         });
@@ -72,7 +72,7 @@ angular.module('app')
 
     this.getWebPreferences = function(callback) {
       var self = this;
-      $http.get('http://127.0.0.1:8081/web_preferences', {
+      $http.get(self.baseUrl + 'web_preferences', {
         params: { username: store.get('id') }
       })
       .success(function(response) {
@@ -87,7 +87,7 @@ angular.module('app')
     }
 
     this.createGraphData = function() {
-      if(this.url === 'http://127.0.0.1:8081/web_log') {
+      if(this.url === this.baseUrl + 'web_log') {
         this.chartParams = {
           series: [ { name: "other websites", data: [] } ],
           categories: [ "other websites" ]
@@ -166,7 +166,7 @@ angular.module('app')
                   break;
                 }
               }
-              if(self.url === 'http://127.0.0.1:8081/app_log') {
+              if(self.url === this.baseUrl + 'app_log') {
                 //console.log('new app: ' + newNameOrUrl + ' assigned to index ' + currIndex);
                 urlIndex[newNameOrUrl] = currIndex;  // map new url to current index
                 self.chartParams.categories[currIndex] = newNameOrUrl;
@@ -247,7 +247,7 @@ angular.module('app')
         tooltip: {
           formatter: function() {
             var verb = 'Visited '
-            if(self.url === 'http://127.0.0.1:8081/app_log') verb = 'Used '
+            if(self.url === this.baseUrl + 'app_log') verb = 'Used '
             return verb + this.x + ' from ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.low) + ' to ' + Highcharts.dateFormat('%l:%M:%S %p', this.point.high);
           }
         },
@@ -272,7 +272,7 @@ angular.module('app')
           formatter: function() {
             var verb = 'Visited ';
             var verb_present = 'visit '
-            if(self.url === 'http://127.0.0.1:8081/app_log') {
+            if(self.url === this.baseUrl + 'app_log') {
               verb = 'Used ';
               verb_present = 'use ';
             }

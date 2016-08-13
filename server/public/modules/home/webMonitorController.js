@@ -3,19 +3,20 @@
 angular.module('app')
 
 .controller('WebMonitorController', ['$scope', 'store', '$http', function($scope, store, $http) {
-  var webMonController = this;
+  var self = this;
   this.preferences = [];
   this.addNewFlag = false;
   this.newPreference = { url: '' };
+  this.baseUrl = 'http://ec2-52-36-92-222.us-west-2.compute.amazonaws.com/';
 
   this.getWebPreferences = function() {
-    $http.get('http://127.0.0.1:8081/web_preferences', {
+    $http.get(self.baseUrl + 'web_preferences', {
       params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
         console.log(response);
-        webMonController.preferences = response;
+        self.preferences = response;
       } else {
         console.log(response);
       }
@@ -27,24 +28,24 @@ angular.module('app')
     if(this.newPreference[this.newPreference.length-1] !== '/')
       this.newPreference += '/';
 
-    $http.post('http://127.0.0.1:8081/web_preferences', {
+    $http.post(self.baseUrl + 'web_preferences', {
       username: store.get('id'),
-      data: webMonController.newPreference
+      data: self.newPreference
     })
     .success(function(response) {
-      webMonController.getWebPreferences();
+      self.getWebPreferences();
     });
   };
 
   this.deleteWebPreference = function() {
-    $http.delete('http://127.0.0.1:8081/tasks', {
+    $http.delete(self.baseUrl + 'tasks', {
       params: {
         username: store.get('id'),
         id: deleteId
       }
     })
     .success(function(response) {
-      webMonController.getWebPreferences();
+      self.getWebPreferences();
     });
   };
 

@@ -7,7 +7,8 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var db = pgp("postgres://postgres:@localhost:5432/appDB");
+console.log("postgres://" + process.env.DB_USER + ":" + process.env.DB_PASS + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT + "/" + process.env.DB_NAME);
+var db = pgp("postgres://" + process.env.DB_USER + ":" + process.env.DB_PASS + "@" + process.env.DB_HOST + ":" + process.env.DB_PORT + "/" + process.env.DB_NAME);
 
 var appEnv = {
 	db: db
@@ -48,6 +49,6 @@ app.get('*', function(req, res) {
 });
 
 
-app.listen(8081, function () {
-	console.log('Server running at http://127.0.0.1:8081/');
+app.listen(8080, function () {
+	console.log('Server running at http://127.0.0.1:8080/');
 })

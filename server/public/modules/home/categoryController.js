@@ -3,12 +3,13 @@
 angular.module('app')
 
 .controller('CategoryController', ['$http', 'store', function($http, store) {
-  var catController = this;
+  var self = this;
   this.categories = [];
   this.newCategory = { name: '', monitor: false };
   this.createCatFlag = false;
   this.createCatError = false;
   this.edit = {};
+  this.requestUrl = 'http://ec2-52-36-92-222.us-west-2.compute.amazonaws.com/categories';
 
   this.setCreateCat = function(val) {
     this.createCatFlag = val;
@@ -32,13 +33,13 @@ angular.module('app')
       }
     }
 
-    $http.post('http://127.0.0.1:8081/categories', {
+    $http.post(self.requestUrl, {
       username: store.get('id'),
-      data: catController.newCategory
+      data: self.newCategory
     })
     .success(function(response) {
-      catController.setCreateCat(false);
-      catController.getCategories();
+      self.setCreateCat(false);
+      self.getCategories();
     });
   };
 
@@ -47,24 +48,24 @@ angular.module('app')
     console.log(this.edit);
     this.edit.id = this.categories[index].id; // grab the table ID of the category that was modified
 
-    $http.put('http://127.0.0.1:8081/categories', {
+    $http.put(self.requestUrl, {
       username: store.get('id'),
-      data: catController.edit
+      data: self.edit
     })
     .success(function(response) {
-      catController.edit = {};
-      catController.getCategories();
+      self.edit = {};
+      self.getCategories();
     });
   };
 
   this.getCategories = function() {
     console.log("getCategories()");
-    $http.get('http://127.0.0.1:8081/categories', {
+    $http.get(self.requestUrl, {
       params: { username: store.get('id') }
     })
     .success(function(response) {
       if(response !== "error") {
-        catController.categories = response;
+        self.categories = response;
         console.log(response);
       } else {
         console.log(response);
@@ -73,7 +74,7 @@ angular.module('app')
   };
 
   this.deleteCategory = function(deleteId) {
-    $http.delete('http://127.0.0.1:8081/categories', {
+    $http.delete(self.requestUrl, {
       params: {
         username: store.get('id'),
         id: deleteId
@@ -93,7 +94,7 @@ angular.module('app')
     console.log(this.categories);
     $http.post('http://127.0.0.1:8081/categories', {
         username: $rootScope.globals.currentUser.username,
-        data: catController.categories
+        data: self.categories
     })
     .success(function(response) {
 

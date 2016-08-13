@@ -18,6 +18,7 @@ angular.module('app')
   this.currEditId = -1;
   this.edit = {};
   this.archiveTasks = true;
+  this.baseUrl = 'http://ec2-52-36-92-222.us-west-2.compute.amazonaws.com/';
 
   this.setCreateTask = function(key, value) {
     if(value === true) {
@@ -46,7 +47,7 @@ angular.module('app')
       }
     }
 
-    $http.put('http://127.0.0.1:8081/tasks', {
+    $http.put(self.baseUrl + 'tasks', {
       username: store.get('id'),
       data: self.tasks[updateId]
     })
@@ -56,7 +57,7 @@ angular.module('app')
   };
 
   this.getCategories = function() {
-    $http.get('http://127.0.0.1:8081/categories', {
+    $http.get(self.baseUrl + 'categories', {
       params: { username: store.get('id') }
     })
     .success(function(response) {
@@ -95,7 +96,7 @@ angular.module('app')
 
   this.getTasks = function() {
     console.log("getting tasks");
-    $http.get('http://127.0.0.1:8081/tasks', {
+    $http.get(self.baseUrl + 'tasks', {
       params: { username: store.get('id') }
     })
     .success(function(response) {
@@ -115,7 +116,7 @@ angular.module('app')
   };
 
   this.addTask = function() {
-    $http.post('http://127.0.0.1:8081/tasks', {
+    $http.post(self.baseUrl + 'tasks', {
       username: store.get('id'),
       data: self.newTask
     })
@@ -126,7 +127,7 @@ angular.module('app')
 
   this.updateTask = function(task) {
     this.edit.id = task.id;
-    $http.put('http://127.0.0.1:8081/tasks', {
+    $http.put(self.baseUrl + 'tasks', {
       username: store.get('id'),
       data: self.edit
     })
@@ -137,7 +138,7 @@ angular.module('app')
   };
 
   this.deleteTask = function(deleteId) {
-    $http.delete('http://127.0.0.1:8081/tasks', {
+    $http.delete(self.baseUrl + 'tasks', {
       params: {
         username: store.get('id'),
         id: deleteId
